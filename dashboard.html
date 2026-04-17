@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WHITEMSSG</title>
+<link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body>
+
+<div class="nametag">Made by Wen_xyz</div>
+
+<!-- CHAT -->
+<div id="chat" class="screen hidden">
+
+        <button class="btn-pubchat" onclick="togglePublicChat()">🌐</button>
+    
+
+    <section id="pubchat-info" class="pubchat hidden">
+
+    <h2 class="public-tagname"> 🌐 Public Chat</h2>
+
+    <!-- MESSAGES AREA -->
+    <div id="pubMessages"></div>
+
+    <!-- INPUT AREA (FIXED) -->
+    <div class="pub-input">
+        <input type="text" id="pubInput" placeholder="Type message...">
+        <button onclick="sendPublicMessage()">Send</button>
+    </div>
+
+</section>
+
+
+
+    <!-- MENU BUTTON -->
+    <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+
+    <!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+
+    <h3 class="tag-inbox">Inbox</h3>
+
+    <div id="chatList"></div>
+
+    <a href="index.html">Log Out</a>
+
+</div>
+
+    <div class="top-bar">
+        <h2 id="userDisplay"></h2>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="targetUser" placeholder="Search username to chat">
+        <button onclick="startChat()">Chat</button>
+    </div>
+
+    <div class="chat-info">
+        <h3 id="chatWith"></h3>
+        <span id="status"></span>
+    </div>
+
+    <div id="messages"></div>
+
+    <div class="input-row">
+        <input type="text" id="messageInput" placeholder="Type message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script src="dashboard.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>

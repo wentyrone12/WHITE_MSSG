@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WHITE_MSSG Auth</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+  <h1>WHITE_MSSG</h1>
+
+  <!-- LOGIN -->
+  <div id="loginForm" class="form active">
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button onclick="login()">Login</button>
+
+    <div class="links">
+      <span onclick="showForm('forgotForm')">Forgot Password</span>
+      <span onclick="showForm('signupForm')">Sign Up</span>
+    </div>
+  </div>
+
+  <!-- SIGN UP -->
+  <div id="signupForm" class="form">
+    <input type="text" id="signupUsername" placeholder="Username">
+    <input type="email" id="signupEmail" placeholder="Email">
+    <input type="password" id="signupPassword" placeholder="Password">
+    <button onclick="signUp()">Create Account</button>
+
+    <div class="links">
+      <span onclick="showForm('loginForm')">Back to Login</span>
+    </div>
+  </div>
+
+  <!-- FORGOT -->
+  <div id="forgotForm" class="form">
+    <input type="email" id="forgotEmail" placeholder="Enter your email">
+    <button onclick="resetPassword()">Send Reset Link</button>
+
+    <div class="links">
+      <span onclick="showForm('loginForm')">Back to Login</span>
+    </div>
+  </div>
+</div>
+
+<div class="footer-tag">Made by Wenxyz</div>
+
+<script src="ui.js"></script>
+<script type="module" src="app.js"></script>
+
+</body>
+</html>
