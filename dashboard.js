@@ -9,8 +9,12 @@ const firebaseConfig = {
   appId: "1:757785261412:web:37974ba59faee1f4baf671",
 };
 
+autoSaveProfile();
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+
+let currentRequest = null;
 
 let username = "";
 let currentChat = "";
@@ -166,12 +170,27 @@ function loadChatList() {
 
                     loadMessages();
                     listenStatus(otherUser);
-
-                    toggleSidebar(); // auto close
+                    toggleSidebar();
                 };
 
                 chatListDiv.appendChild(div);
             }
+        });
+    });
+
+    // ✅ HIWALAY NA LISTENER
+    db.ref("messageRequests/" + uid).on("value", snapshot => {
+    snapshot.forEach(req => {
+            const data = req.val();
+
+            const div = document.createElement("div");
+            div.classList.add("chat-item");
+            div.innerText = "📩 " + data.fromUsername;
+
+            div.onclick = () => {
+                showRequest(data, req.key);
+            };
+            chatListDiv.appendChild(div);
         });
     });
 }
@@ -225,7 +244,7 @@ function loadPublicMessages() {
 
         // 🔥 CLICK TO CHAT
         name.onclick = () => {
-            startChatFromPublic(data.user);
+            openProfile(data.user);
         };
 
         // 🔥 MESSAGE TEXT
@@ -263,4 +282,269 @@ function pinMessage(text) {
         text: text,
         by: username
     });
+}
+
+function openProfile(targetUser){
+    const overlay = document.getElementById("profileOverlay");
+
+    getUIDByUsername(targetUser, (uidFound) => {
+
+        if (!uidFound){
+            alert("User not found!");
+            return;
+        }
+
+        db.ref("users/" + uidFound).once("value", snap => {
+            const data = snap.val();
+
+            currentProfileUser = uidFound;
+
+            // ✅ DEFINE FIRST (IMPORTANT)
+            const isMe = uidFound === uid;
+
+            // ✅ SET DATA
+            document.getElementById("profileName").innerText =
+                data.username || targetUser;
+
+            document.getElementById("profileAge").innerText =
+                "Age: " + (data.age || "N/A");
+
+            document.getElementById("profileBio").innerText =
+                data.bio || "No bio";
+
+            document.getElementById("profileAgeInput").value =
+                data.age || "";
+
+            document.getElementById("profileBioInput").value =
+                data.bio || "";
+
+            // ✅ BUTTON CONTROL (AFTER isMe)
+            document.getElementById("addFriendBtn").style.display =
+                isMe ? "none" : "inline-block";
+
+            document.getElementById("messageUserBtn").style.display =
+                isMe ? "none" : "inline-block";
+
+            document.querySelector(".edit-profile-btn").style.display =
+                isMe ? "inline-block" : "none";
+
+            document.querySelector(".save-profile-btn").style.display =
+                isMe ? "inline-block" : "none";
+
+            // ✅ RESET MESSAGE BOX
+            document.getElementById("messageBox").classList.add("hidden");
+
+            // ✅ STALK MODE
+            if (!isMe){
+                document.getElementById("profileAgeInput").classList.add("hidden");
+                document.getElementById("profileBioInput").classList.add("hidden");
+            }
+
+            overlay.classList.remove("hidden");
+
+            setTimeout(() => {
+                overlay.classList.add("active");
+            }, 10);
+        });
+
+    });
+}
+
+function closeProfile(){
+    const overlay = document.getElementById("profileOverlay");
+
+    overlay.classList.remove("active");
+
+    setTimeout(()=>{
+        overlay.classList.add("hidden");
+
+        // 🔥 reset UI
+        document.getElementById("messageUserBtn").style.display = "inline-block";
+        document.getElementById("addFriendBtn").style.display = "inline-block";
+        document.getElementById("messageBox").classList.add("hidden");
+
+    },300);
+}
+
+function openMyProfile(){
+    if (!username) return;
+
+    openProfile(username);
+}
+
+let currentProfileUser = "";
+
+
+function enableEditProfile(){
+
+    document.getElementById("profileAgeInput").classList.remove("hidden");
+    document.getElementById("profileBioInput").classList.remove("hidden");
+
+    document.getElementById("profileAge").classList.add("hidden");
+    document.getElementById("profileBio").classList.add("hidden");
+
+    document.querySelector(".save-profile-btn").classList.remove("hidden");
+}
+
+function saveProfile(){
+
+    const newAge = document.getElementById("profileAgeInput").value;
+    const newBio = document.getElementById("profileBioInput").value;
+
+    db.ref("users/" + currentProfileUser).update({
+        age: newAge,
+        bio: newBio
+    });
+
+    document.getElementById("profileAge").innerText =
+        "Age: " + newAge;
+
+    document.getElementById("profileBio").innerText =
+        newBio;
+
+    document.getElementById("profileAge").classList.remove("hidden");
+    document.getElementById("profileBio").classList.remove("hidden");
+
+    document.getElementById("profileAgeInput").classList.add("hidden");
+    document.getElementById("profileBioInput").classList.add("hidden");
+
+    document.querySelector(".save-profile-btn").classList.add("hidden");
+}
+
+function autoSaveProfile() {
+    const ageInput = document.getElementById("profileAgeInput");
+    const bioInput = document.getElementById("profileBioInput");
+
+    ageInput.oninput = () => {
+        if (!currentProfileUser) return;
+
+        db.ref("users/" + currentProfileUser).update({
+            age: ageInput.value
+        });
+    };
+
+    bioInput.oninput = () => {
+        if (!currentProfileUser) return;
+
+        db.ref("users/" + currentProfileUser).update({
+            bio: bioInput.value
+        });
+    };
+}
+
+function openMessageBox(){
+
+    // 🔥 hide buttons
+    document.getElementById("messageUserBtn").style.display = "none";
+    document.getElementById("addFriendBtn").style.display = "none";
+
+    // 🔥 show message box
+    const box = document.getElementById("messageBox");
+    box.classList.remove("hidden");
+
+    // 🔥 OPTIONAL: scroll sa baba ng card
+    box.scrollIntoView({ behavior: "smooth" });
+}
+
+
+function getUIDByUsername(targetUsername, callback){
+    db.ref("users").once("value", snapshot => {
+        let foundUID = null;
+
+        snapshot.forEach(user => {
+            const data = user.val();
+            if (data.username === targetUsername){
+                foundUID = user.key;
+            }
+        });
+
+        callback(foundUID);
+    });
+}
+
+function addFriend(){
+    if (!currentProfileUser || currentProfileUser === uid) return;
+
+    db.ref("friendRequests/" + currentProfileUser + "/" + uid).set({
+        from: uid,
+        username: username
+    });
+
+    alert("Friend request sent!");
+}
+
+function sendMessageRequest(){
+    const msg = document.getElementById("requestMessage").value.trim();
+
+    if (!msg || !currentProfileUser) return;
+
+    db.ref("messageRequests/" + currentProfileUser).push({
+        fromUID: uid,
+        fromUsername: username,
+        message: msg
+    });
+
+    document.getElementById("requestMessage").value = "";
+    document.getElementById("messageBox").classList.add("hidden");
+
+    alert("Message request sent!");
+}
+
+function acceptMessageRequest(senderName, senderUID){
+
+    currentChat = [username, senderName].sort().join("_");
+
+    document.getElementById("chatWith").innerText =
+        "Chat with: " + senderName;
+
+    loadMessages();
+    listenStatus(senderName);
+
+    // delete request after accept
+    db.ref("messageRequests/" + uid).remove();
+}
+
+function showRequest(data, requestKey){
+    currentRequest = {
+        key: requestKey,
+        fromUID: data.fromUID,
+        fromUsername: data.fromUsername
+    };
+
+    document.getElementById("requestFrom").innerText =
+        "From: " + data.fromUsername;
+
+    document.getElementById("requestText").innerText =
+        data.message;
+
+    // SHOW OVERLAY
+    document.getElementById("requestOverlay").classList.remove("hidden");
+}
+
+function acceptRequest(){
+    if (!currentRequest) return;
+
+    currentChat = [username, currentRequest.fromUsername].sort().join("_");
+
+    document.getElementById("chatWith").innerText =
+        "Chat with: " + currentRequest.fromUsername;
+
+    loadMessages();
+    listenStatus(currentRequest.fromUsername);
+
+    db.ref("messageRequests/" + uid + "/" + currentRequest.key).remove();
+
+    document.getElementById("requestOverlay").classList.add("hidden");
+
+    currentRequest = null;
+}
+
+function declineRequest(){
+    if (!currentRequest) return;
+
+    db.ref("messageRequests/" + uid + "/" + currentRequest.key).remove();
+
+    document.getElementById("requestOverlay").classList.add("hidden");
+
+    currentRequest = null;
 }

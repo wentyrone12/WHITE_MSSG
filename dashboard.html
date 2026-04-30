@@ -9,6 +9,36 @@
 
 <body>
 
+    <!-- PROFILE OVERLAY -->
+<div id="profileOverlay" class="profile-overlay hidden">
+    <div class="profile-card">
+        <button class="edit-profile-btn" onclick="enableEditProfile()">Edit Profile</button>
+        <button class="save-profile-btn hidden" onclick="saveProfile()">Save</button>
+
+        <button class="btn-addmess" id="messageUserBtn" onclick="openMessageBox()">Message</button>
+        <button class="btn-addmess" id="addFriendBtn" onclick="addFriend()">Add Friend</button>
+        <div id="messageBox" class="hidden">
+    <textarea id="requestMessage" placeholder="Type your message..."></textarea>
+    <button class="btn-sendmssg" onclick="sendMessageRequest()">Send</button>
+</div>
+
+        <button class="close-profile" onclick="closeProfile()">✖</button>
+
+        <h2 id="profileName"></h2>
+
+        <p id="profileAge"></p>
+        <p style="color: gold;" id="profileBio"></p>
+
+        <input id="profileAgeInput" type="number" class="hidden" placeholder="Age">
+        <textarea id="profileBioInput" class="hidden" placeholder="Bio"></textarea>
+        <div class="follow-stats">
+            <span id="profileFollowers"></span>
+            <span id="profileFollowing"></span>
+        </div>
+
+    </div>
+</div>
+
 <div class="nametag">Made by Wen_xyz</div>
 
 <!-- CHAT -->
@@ -49,7 +79,7 @@
 </div>
 
     <div class="top-bar">
-        <h2 id="userDisplay"></h2>
+        <h2 style="background-color: transparent;" id="userDisplay" onclick="openMyProfile()"></h2>
     </div>
 
     <div class="search-bar">
@@ -63,6 +93,21 @@
     </div>
 
     <div id="messages"></div>
+
+    <!-- MESSAGE REQUEST OVERLAY -->
+        <div id="requestOverlay" class="request-overlay hidden">
+            <div class="request-card">
+                <h3>Message Request</h3>
+                <p id="requestFrom"></p>
+                  <div class="rqmessage-card">
+                    <p id="requestText"></p>
+                  </div>
+                <button class="btnacc-dec" onclick="acceptRequest()">Accept</button>
+                <button class="btnacc-dec" onclick="declineRequest()">Decline</button>
+            </div>
+        </div>
+
+</div>
 
     <div class="input-row">
         <input type="text" id="messageInput" placeholder="Type message...">
