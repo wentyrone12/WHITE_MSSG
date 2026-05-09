@@ -294,6 +294,17 @@ function openProfile(targetUser){
             return;
         }
 
+        db.ref("messageRequests/" + uid + "/" + currentProfileUser).once("value", snap => {
+
+    const data = snap.val();
+
+    if (data && data.cooldownUntil && Date.now() < data.cooldownUntil) {
+        startCooldownUI(data.cooldownUntil);
+    } else {
+        resetMessageBox();
+    }
+});
+
         db.ref("users/" + uidFound).once("value", snap => {
             const data = snap.val();
 
@@ -348,6 +359,21 @@ function openProfile(targetUser){
         });
 
     });
+
+    function resetMessageBox(){
+    const btn = document.querySelector(".btn-sendmssg");
+    const textarea = document.getElementById("requestMessage");
+
+    btn.disabled = false;
+    btn.style.opacity = "1";
+    btn.innerText = "Send";
+
+    textarea.disabled = false;
+    textarea.style.opacity = "1";
+    textarea.value = "";
+}
+
+resetMessageBox();
 }
 
 function closeProfile(){
@@ -377,12 +403,18 @@ let currentProfileUser = "";
 
 function enableEditProfile(){
 
+    // SHOW INPUTS
     document.getElementById("profileAgeInput").classList.remove("hidden");
     document.getElementById("profileBioInput").classList.remove("hidden");
 
+    // HIDE TEXT
     document.getElementById("profileAge").classList.add("hidden");
     document.getElementById("profileBio").classList.add("hidden");
 
+    // HIDE EDIT BUTTON
+    document.querySelector(".edit-profile-btn").classList.add("hidden");
+
+    // SHOW SAVE BUTTON
     document.querySelector(".save-profile-btn").classList.remove("hidden");
 }
 
@@ -409,6 +441,10 @@ function saveProfile(){
     document.getElementById("profileBioInput").classList.add("hidden");
 
     document.querySelector(".save-profile-btn").classList.add("hidden");
+
+    document.querySelector(".save-profile-btn").classList.add("hidden");
+
+document.querySelector(".edit-profile-btn").classList.remove("hidden");
 }
 
 function autoSaveProfile() {
@@ -475,19 +511,89 @@ function addFriend(){
 
 function sendMessageRequest(){
     const msg = document.getElementById("requestMessage").value.trim();
-
     if (!msg || !currentProfileUser) return;
 
-    db.ref("messageRequests/" + currentProfileUser).push({
-        fromUID: uid,
-        fromUsername: username,
-        message: msg
+    const ref = db.ref("messageRequests/" + currentProfileUser + "/" + uid);
+
+    ref.once("value", snap => {
+
+        const data = snap.val();
+
+        // 🔥 IF EXISTS AND STILL IN COOLDOWN
+        if (data && data.cooldownUntil && Date.now() < data.cooldownUntil) {
+            startCooldownUI(data.cooldownUntil);
+            return;
+        }
+
+        const now = Date.now();
+        const cooldown = now + (24 * 60 * 60 * 1000); // 24 hours
+
+        ref.set({
+            fromUID: uid,
+            fromUsername: username,
+            message: msg,
+            sentAt: now,
+            cooldownUntil: cooldown
+        });
+
+        document.getElementById("requestMessage").value = "";
+
+        startCooldownUI(cooldown);
+
+        alert("Message request sent!");
     });
+}
 
-    document.getElementById("requestMessage").value = "";
-    document.getElementById("messageBox").classList.add("hidden");
+let cooldownInterval = null;
 
-    alert("Message request sent!");
+function startCooldownUI(cooldownUntil){
+
+    const btn = document.querySelector(".btn-sendmssg");
+    const textarea = document.getElementById("requestMessage");
+
+    btn.disabled = true;
+    textarea.disabled = true;
+
+    btn.style.opacity = "0.4";
+    textarea.style.opacity = "0.6";
+
+    btn.innerText = "Wait 24h";
+
+    if (cooldownInterval) clearInterval(cooldownInterval);
+
+    cooldownInterval = setInterval(() => {
+
+        const now = Date.now();
+        const remaining = cooldownUntil - now;
+
+        if (remaining <= 0) {
+            clearInterval(cooldownInterval);
+            resetMessageBox();
+            return;
+        }
+
+        const hrs = Math.floor(remaining / (1000 * 60 * 60));
+        const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((remaining % (1000 * 60)) / 1000);
+
+        btn.innerText = `Wait ${hrs}h ${mins}m ${secs}s`;
+
+    }, 1000);
+}
+
+function disableMessageBox(){
+
+    const btn = document.querySelector(".btn-sendmssg");
+    const textarea = document.getElementById("requestMessage");
+
+    // disable send button
+    btn.disabled = true;
+    btn.style.opacity = "0.4";
+    btn.innerText = "Sent";
+
+    // disable typing (but keep visible)
+    textarea.disabled = true;
+    textarea.style.opacity = "0.6";
 }
 
 function acceptMessageRequest(senderName, senderUID){
@@ -502,6 +608,25 @@ function acceptMessageRequest(senderName, senderUID){
 
     // delete request after accept
     db.ref("messageRequests/" + uid).remove();
+}
+
+function resetMessageBox(){
+
+    const btn = document.querySelector(".btn-sendmssg");
+    const textarea = document.getElementById("requestMessage");
+
+    btn.disabled = false;
+    textarea.disabled = false;
+
+    btn.style.opacity = "1";
+    textarea.style.opacity = "1";
+
+    btn.innerText = "Send";
+
+    if (cooldownInterval) {
+        clearInterval(cooldownInterval);
+        cooldownInterval = null;
+    }
 }
 
 function showRequest(data, requestKey){

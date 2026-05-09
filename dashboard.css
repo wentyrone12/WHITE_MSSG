@@ -571,3 +571,31 @@ a:hover{
     color: gold;
     bottom: -200px;
 }
+
+@media screen and (min-width: 992px) {
+  .input-row {
+    display: flex;
+    padding: 10px;
+    gap: 5px;
+    width: 100%;
+    max-width: 500px;
+    justify-content: center;
+    justify-self: center;
+}
+
+.input-row input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #00ff88;
+    background: transparent;
+    color: white;
+}
+
+.input-row button {
+    padding: 12px;
+    border-radius: 10px;
+    background: #00ff88;
+    border: none;
+}
+}
