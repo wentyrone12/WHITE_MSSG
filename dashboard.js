@@ -9,6 +9,12 @@ const firebaseConfig = {
   appId: "1:757785261412:web:37974ba59faee1f4baf671",
 };
 
+
+document.addEventListener("contextmenu", function(e){
+  e.preventDefault();
+  alert("Right click is disabled!");
+});
+
 autoSaveProfile();
 
 firebase.initializeApp(firebaseConfig);

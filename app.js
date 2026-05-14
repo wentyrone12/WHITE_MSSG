@@ -22,6 +22,11 @@ const firebaseConfig = {
   measurementId: "G-2K7NCM21PB"
 };
 
+document.addEventListener("contextmenu", function(e){
+  e.preventDefault();
+  alert("Right click is disabled!");
+});
+
 // INIT
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
