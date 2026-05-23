@@ -16,7 +16,7 @@
         <button class="save-profile-btn hidden" onclick="saveProfile()">Save</button>
 
         <button class="btn-addmess" id="messageUserBtn" onclick="openMessageBox()">Message</button>
-        <button class="btn-addmess" id="addFriendBtn" onclick="addFriend()">Add Friend</button>
+        <button style="display: none;" id="addFriendBtn" onclick="addFriend()"></button>
         <div id="messageBox" class="hidden">
     <textarea id="requestMessage" placeholder="Type your message..."></textarea>
     <button class="btn-sendmssg" onclick="sendMessageRequest()">Send</button>
@@ -29,8 +29,8 @@
         <p id="profileAge"></p>
         <p style="color: gold;" id="profileBio"></p>
 
-        <input id="profileAgeInput" type="number" class="hidden" placeholder="Age" min="1" max="3">
-        <textarea id="profileBioInput" class="hidden" placeholder="Bio" maxlength="30" ></textarea>
+        <input id="profileAgeInput" type="number" min="0" max="999" oninput="limitDigits(this)" class="hidden" placeholder="Age">
+        <textarea id="profileBioInput" class="hidden" placeholder="Bio" maxlength="20" ></textarea>
         <div class="follow-stats">
             <span id="profileFollowers"></span>
             <span id="profileFollowing"></span>
@@ -39,7 +39,7 @@
     </div>
 </div>
 
-<div class="nametag">Made by Wen_xyz</div>
+<div class="nametag">Made by Wenxyz</div>
 
 <!-- CHAT -->
 <div id="chat" class="screen hidden">
@@ -84,7 +84,7 @@
 
     <div class="search-bar">
         <input type="text" id="targetUser" placeholder="Search username to chat">
-        <button onclick="startChat()">Chat</button>
+        <button onclick="startChat()">Search</button>
     </div>
 
     <div class="chat-info">

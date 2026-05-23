@@ -322,7 +322,7 @@ function openProfile(targetUser){
                 "Age: " + (data.age || "N/A");
 
             document.getElementById("profileBio").innerText =
-                data.bio || "No bio";
+                data.bio || "No bio yet";
 
             document.getElementById("profileAgeInput").value =
                 data.age || "";

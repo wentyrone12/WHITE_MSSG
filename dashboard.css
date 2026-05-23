@@ -261,7 +261,7 @@ a:hover{
 .public-tagname{
     padding-top: 15px;
     height: 70px;
-    background-color: darkgreen;
+    background-color: rgb(14, 36, 14);
     border-bottom: 2px solid red;
     animation: Glowingname 2s ease-in infinite;
 }
@@ -530,7 +530,9 @@ a:hover{
     color: #00ff88;
 }
 #requestText{
-    margin: 30px;
+    margin:10px;
+    text-wrap:wrap;
+    overflow: auto;
 }
 #requestText{
     justify-content: start;
@@ -542,7 +544,7 @@ a:hover{
     margin-top: 15px;
     width: 200px;
     height: 200px;
-    border-radius: 10pxs;
+    border-radius: 10px;
     border: 1px solid gold;
 }
 .btnacc-dec{
