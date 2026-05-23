@@ -10,11 +10,6 @@ const firebaseConfig = {
 };
 
 
-document.addEventListener("contextmenu", function(e){
-  e.preventDefault();
-  alert("Right click is disabled!");
-});
-
 autoSaveProfile();
 
 firebase.initializeApp(firebaseConfig);
