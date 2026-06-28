@@ -686,7 +686,3 @@ document.addEventListener("keydown", function(e){
     alert("Inspect is disabled!");
   }
 });
-
-document.addEventListener("contextmenu", function(e){
-  e.preventDefault();
-});

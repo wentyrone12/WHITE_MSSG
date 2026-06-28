@@ -59,16 +59,18 @@ body {
     cursor: pointer;
     z-index: 10;
 }
-.btn-pubchat{
+
+.btn-pubchat {
     position: fixed;
     right: 0;
     top: 3%;
     font-size: 18px;
-    margin-right: 12px ;
+    margin-right: 12px;
     z-index: 999;
     background-color: transparent;
 }
-.public-tag{
+
+.public-tag {
     margin-top: 17px;
 }
 
@@ -84,29 +86,33 @@ body {
     overflow-y: auto;
     transition: 0.4s ease;
 }
-a{
+
+a {
     justify-self: center;
     text-align: center;
     justify-content: center;
     color: black;
     padding: 8px;
     border-radius: 20px;
-    background-color: rgb(31, 253, 31);
+    background-color: rgb(177, 23, 23);
     margin: 10px;
     position: absolute;
     bottom: 30px;
-    left: 80px ;
+    left: 80px;
     text-decoration: none;
 }
-a:hover{
+
+a:hover {
     transition: 0.5s ease-in;
     background-color: yellow;
     scale: calc(1.1);
 }
-#chatList{
+
+#chatList {
     margin-top: 30px;
 }
-.tag-inbox{
+
+.tag-inbox {
     position: sticky;
     top: 0;
     margin-left: 10%;
@@ -116,6 +122,7 @@ a:hover{
     z-index: 3;
     font-size: 18px;
 }
+
 .sidebar.active {
     left: 0;
     z-index: 9;
@@ -199,6 +206,7 @@ a:hover{
     padding: 10px;
     margin: 5px;
     border-radius: 15px;
+    overflow-wrap: break-word;
 }
 
 .me {
@@ -236,6 +244,7 @@ a:hover{
     background: #00ff88;
     border: none;
 }
+
 .pubchat {
     position: fixed;
     right: -100%;
@@ -254,28 +263,34 @@ a:hover{
 .pubchat.active {
     right: 0;
 }
-.nametag{
+
+.nametag {
     z-index: -999999;
     color: gray;
 }
-.public-tagname{
+
+.public-tagname {
     padding-top: 15px;
     height: 70px;
     background-color: rgb(14, 36, 14);
     border-bottom: 2px solid red;
     animation: Glowingname 2s ease-in infinite;
 }
-@keyframes Glowingname{
-    0%{
+
+@keyframes Glowingname {
+    0% {
         border-bottom: 2px solid red;
     }
-    50%{
+
+    50% {
         border-bottom: 2px solid cyan;
     }
-    100%{
+
+    100% {
         border-bottom: 2px solid orange;
     }
 }
+
 /* MESSAGES AREA (SCROLLABLE ONLY THIS) */
 #pubMessages {
     flex: 1;
@@ -310,10 +325,12 @@ a:hover{
     background: #00ff88;
     border: none;
 }
+
 #pubMessages {
     scroll-behavior: smooth;
 }
-#userDisplay{
+
+#userDisplay {
     padding: 10px;
     border-radius: 10px;
     z-index: 1;
@@ -322,26 +339,27 @@ a:hover{
     display: inline-block;
     animation: glow 4s infinite linear;
 }
+
 @keyframes glow {
-  0% {
-    color: cyan;
-    tex-shadow: 0 0 15px 8px cyan;
-  }
+    0% {
+        color: cyan;
+        tex-shadow: 0 0 15px 8px cyan;
+    }
 
-  33% {
-    color: red;
-    text-shadow: 0 0 15px 8px rgb(41, 234, 67);
-  }
+    33% {
+        color: red;
+        text-shadow: 0 0 15px 8px rgb(41, 234, 67);
+    }
 
-  66% {
-    color: gold;
-    text-shadow: 0 0 15px 8px rgb(255, 0, 0);
-  }
+    66% {
+        color: gold;
+        text-shadow: 0 0 15px 8px rgb(255, 0, 0);
+    }
 
-  100% {
-    color: cyan;
-    text-shadow: 0 0 15px 8px rgb(0, 255, 255);
-  }
+    100% {
+        color: cyan;
+        text-shadow: 0 0 15px 8px rgb(0, 255, 255);
+    }
 }
 
 
@@ -352,7 +370,7 @@ a:hover{
     width: 100%;
     height: 100%;
 
-    background: rgba(0,0,0,0.95);
+    background: rgba(0, 0, 0, 0.95);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -377,29 +395,30 @@ a:hover{
     color: #00ff88;
     border-radius: 15px;
     animation: glowCycle 4s infinite linear;
-  text-align: center;
-  
+    text-align: center;
+
 }
+
 @keyframes glowCycle {
-  0% {
-    border-color: rgb(26, 51, 51);
-    box-shadow: 0 0 15px 8px cyan;
-  }
+    0% {
+        border-color: rgb(26, 51, 51);
+        box-shadow: 0 0 15px 8px cyan;
+    }
 
-  33% {
-    border-color: rgb(99, 27, 27);
-    box-shadow: 0 0 15px 8px rgb(18, 114, 28);
-  }
+    33% {
+        border-color: rgb(99, 27, 27);
+        box-shadow: 0 0 15px 8px rgb(18, 114, 28);
+    }
 
-  66% {
-    border-color: gold;
-    box-shadow: 0 0 15px 8px gold;
-  }
+    66% {
+        border-color: gold;
+        box-shadow: 0 0 15px 8px gold;
+    }
 
-  100% {
-    border-color: cyan;
-    box-shadow: 0 0 15px 8px cyan;
-  }
+    100% {
+        border-color: cyan;
+        box-shadow: 0 0 15px 8px cyan;
+    }
 }
 
 .close-profile {
@@ -443,7 +462,8 @@ a:hover{
     border-radius: 10px;
     font-weight: bold;
 }
-#profileBioInput{
+
+#profileBioInput {
     margin-top: 10px;
     height: 70px;
     width: 90%;
@@ -453,21 +473,23 @@ a:hover{
     color: white;
     padding: 6px;
 }
-#profileAgeInput{
+
+#profileAgeInput {
     width: 20%;
     background-color: transparent;
     color: white;
     border: 1px solid yellowgreen;
     margin-bottom: 10px;
     text-align: center;
-    padding: 3px 0 ;
+    padding: 3px 0;
 }
-#messageBox{
+
+#messageBox {
     margin-top: 15px;
     width: 100%;
 }
 
-#messageBox textarea{
+#messageBox textarea {
     width: 100%;
     height: 80px;
     position: relative;
@@ -479,7 +501,7 @@ a:hover{
     color: #00ff88;
 }
 
-.btn-sendmssg{
+.btn-sendmssg {
     position: relative;
     top: 132px;
     margin-top: 10px;
@@ -495,7 +517,7 @@ a:hover{
     display: none;
 }
 
-#messageBox{
+#messageBox {
     margin: 0;
     padding: 0;
     height: 30px;
@@ -507,13 +529,10 @@ a:hover{
     left: 0;
     width: 100%;
     height: 100%;
-
-    background: rgba(0,0,0,0.85);
-
+    background: rgba(0, 0, 0, 0.85);
     display: flex;
     justify-content: center;
     align-items: center;
-
     z-index: 9999;
 }
 
@@ -529,47 +548,55 @@ a:hover{
     text-align: center;
     color: #00ff88;
 }
-#requestText{
-    margin:10px;
-    text-wrap:wrap;
+
+#requestText {
+    margin: 10px;
+    overflow-wrap: break-word;
     overflow: auto;
 }
-#requestText{
+
+#requestText {
     justify-content: start;
     text-align: start;
     color: gold;
 }
-.rqmessage-card{
+
+.rqmessage-card {
+    overflow-wrap: break-word;
+    overflow: auto;
     justify-self: center;
     margin-top: 15px;
-    width: 200px;
-    height: 200px;
+    width: 300px;
+    height: 300px;
+    font-size: 12px;
     border-radius: 10px;
     border: 1px solid gold;
 }
-.btnacc-dec{
+
+.btnacc-dec {
     position: relative;
     bottom: -50px;
     margin: 20px;
     padding: 5px;
     font-size: 20px;
-    background-color: black;
-    color: green;
+    background-color: lightgreen;
+    color: rgb(20, 20, 20);
     border: 1px solid gold;
     border-radius: 10px;
 }
+
 /* FIX hidden (IMPORTANT) */
 .hidden {
     display: none !important;
 }
 
-#profileName{
+#profileName {
     color: cyan;
     position: relative;
     top: -40px;
 }
 
-.btn-addmess{
+.btn-addmess {
     position: relative;
     font-size: 18px;
     padding: 5px;
@@ -581,47 +608,29 @@ a:hover{
 }
 
 @media screen and (min-width: 992px) {
-  .input-row {
-    display: flex;
-    padding: 10px;
-    gap: 5px;
-    width: 100%;
-    max-width: 500px;
-    justify-content: center;
-    justify-self: center;
+    .input-row {
+        display: flex;
+        padding: 10px;
+        gap: 5px;
+        width: 100%;
+        max-width: 500px;
+        justify-content: center;
+        justify-self: center;
+    }
+
+    .input-row input {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #00ff88;
+        background: transparent;
+        color: white;
+    }
+
+    .input-row button {
+        padding: 12px;
+        border-radius: 10px;
+        background: #00ff88;
+        border: none;
+    }
 }
-
-.input-row input {
-    flex: 1;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #00ff88;
-    background: transparent;
-    color: white;
-}
-
-.input-row button {
-    padding: 12px;
-    border-radius: 10px;
-    background: #00ff88;
-    border: none;
-}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
