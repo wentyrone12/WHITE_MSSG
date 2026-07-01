@@ -94,7 +94,7 @@ a {
     color: black;
     padding: 8px;
     border-radius: 20px;
-    width:90%;
+    width: 90%;
     background-color: rgb(177, 23, 23);
     margin: 10px;
     position: absolute;
@@ -363,19 +363,16 @@ a:hover {
     }
 }
 
-
 .profile-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-
     background: rgba(0, 0, 0, 0.95);
     display: flex;
     justify-content: center;
     align-items: center;
-
     z-index: 9999;
     opacity: 0;
     transition: 0.3s;
@@ -392,12 +389,12 @@ a:hover {
     width: 90%;
     height: 300px;
     max-width: 400px;
+    word-break: break-word;
     text-align: center;
     color: #00ff88;
     border-radius: 15px;
     animation: glowCycle 4s infinite linear;
     text-align: center;
-
 }
 
 @keyframes glowCycle {
@@ -638,24 +635,17 @@ a:hover {
 }
 
 .settings-btn {
-
     width: 90%;
     margin: 10px;
     padding: 10px;
-    position:absolute;
-    bottom:70px;
-
+    position: absolute;
+    bottom: 70px;
     border: none;
     border-radius: 12px;
-
     background: #00ff88;
-
     color: black;
-
     font-weight: bold;
-
     cursor: pointer;
-
 }
 
 .settings-btn:hover {
@@ -665,118 +655,227 @@ a:hover {
 }
 
 .settings-overlay {
-
     position: fixed;
-
     inset: 0;
-
-    background: rgba(0, 0, 0, .93);
-
+    background: gba(0, 0, 0, .93);
     display: flex;
-
     justify-content: center;
-
     align-items: center;
-
     z-index: 99999;
-
 }
 
 .settings-card {
-
     width: 95%;
-
     max-width: 430px;
-
     max-height: 90vh;
-
     overflow: auto;
-
     background: #0d0d0d;
-
     border: 2px solid #00ff88;
-
     border-radius: 18px;
-
     padding: 20px;
-
     color: #00ff88;
-
     animation: glowCycle 4s linear infinite;
-
 }
 
 .setting-section {
-
     margin-top: 20px;
-
 }
 
 .setting-section h3 {
-
     margin-bottom: 10px;
-
     color: gold;
-
 }
 
 .setting-section input,
 .setting-section textarea {
-
     width: 100%;
-
     margin-top: 8px;
-
     margin-bottom: 15px;
-
     padding: 10px;
-
     background: black;
-
     color: white;
-
     border: 1px solid #00ff88;
-
     border-radius: 10px;
-
 }
 
 .setting-section button {
-
     width: 100%;
-
     padding: 10px;
-
     margin-bottom: 10px;
-
     background: #222;
-
     color: #00ff88;
+    border: 1px solid #00ff88;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.save-setting-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background: #00ff88;
+    color: black;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+/* ========================= */
+/* SIDEBAR CATEGORIES */
+/* ========================= */
+
+.sidebar-header {
+    position: sticky;
+    top: 0;
+    background: #111;
+    z-index: 5;
+}
+
+.sidebar-categories {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #222;
+}
+
+.category-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background: #1b1b1b;
+    color: white;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.category-btn:hover {
+    background: #00ff88;
+    color: black;
+}
+
+.category-btn.active {
+    background: #00ff88;
+    color: black;
+    font-weight: bold;
+}
+
+#chatCategory,
+#requestCategory {
+    margin-top: 10px;
+}
+
+#requestList {
+    display: flex;
+    flex-direction: column;
+}
+
+.request-item {
+    padding: 12px;
+    border-bottom: 1px solid #222;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.request-item:hover {
+    background: #00ff88;
+    color: black;
+}
+
+.conversation-area {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.conversation-header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.message {
+
+    position: relative;
+
+    padding-right: 40px;
+
+}
+
+.msg-menu-btn {
+
+    position: absolute;
+
+    right: 5px;
+
+    top: 5px;
+
+    background: none;
+
+    border: none;
+
+    color: white;
+
+    cursor: pointer;
+
+    font-size: 18px;
+
+}
+
+.msg-menu {
+
+    position: absolute;
+
+    right: 0;
+
+    top: 30px;
+
+    background: #111;
 
     border: 1px solid #00ff88;
 
     border-radius: 10px;
 
-    cursor: pointer;
+    display: flex;
+
+    flex-direction: column;
+
+    z-index: 100;
+
+    overflow: hidden;
 
 }
 
-.save-setting-btn {
+.msg-menu button {
 
-    width: 100%;
+    background: none;
 
-    margin-top: 20px;
+    border: none;
 
-    padding: 12px;
+    color: white;
+
+    padding: 8px 15px;
+
+    cursor: pointer;
+
+    text-align: left;
+
+}
+
+.msg-menu button:hover {
 
     background: #00ff88;
 
     color: black;
 
-    border: none;
+}
 
-    border-radius: 12px;
+.msg-content {
 
-    font-weight: bold;
+    padding-right: 20px;
+
+    word-break: break-word;
 
 }

@@ -18,6 +18,27 @@ let currentRequest = null;
 let username = "";
 let currentChat = "";
 
+function showCategory(type) {
+
+    document.getElementById("chatCategory").classList.add("hidden");
+    document.getElementById("requestCategory").classList.add("hidden");
+
+    document.querySelectorAll(".category-btn").forEach(btn => {
+        btn.classList.remove("active");
+    });
+
+    if (type === "chat") {
+        document.getElementById("chatCategory").classList.remove("hidden");
+        document.querySelectorAll(".category-btn")[0].classList.add("active");
+    }
+
+    if (type === "request") {
+        document.getElementById("requestCategory").classList.remove("hidden");
+        document.querySelectorAll(".category-btn")[1].classList.add("active");
+    }
+
+}
+
 const uid = localStorage.getItem("uid");
 
 if (!uid) {
@@ -40,6 +61,7 @@ db.ref("users/" + uid).once("value", snap => {
 
     setOnlineStatus(true);
     loadChatList();
+    showCategory("chat");
     loadPublicMessages();
 });
 
@@ -55,6 +77,7 @@ function login() {
 
     setOnlineStatus(true);
     loadChatList();
+    showCategory("chat");
 }
 
 
@@ -110,7 +133,11 @@ function sendMessage() {
 
     db.ref("chats/" + currentChat).push({
         user: username,
-        text: msg
+        text: msg,
+        edited: false,
+        deleted: false,
+        unsent: false,
+        time: Date.now()
     });
 
     document.getElementById("messageInput").value = "";
@@ -118,16 +145,19 @@ function sendMessage() {
 
 // LOAD MESSAGES
 function loadMessages() {
+
     const messagesDiv = document.getElementById("messages");
     messagesDiv.innerHTML = "";
 
     db.ref("chats/" + currentChat).off();
 
     db.ref("chats/" + currentChat).on("child_added", snap => {
+
         const data = snap.val();
+        const key = snap.key;
 
         const div = document.createElement("div");
-        div.classList.add("message");
+        div.className = "message";
 
         if (data.user === username) {
             div.classList.add("me");
@@ -135,62 +165,141 @@ function loadMessages() {
             div.classList.add("other");
         }
 
-        div.innerText = data.text;
+        let text = data.text;
+
+        if (data.deleted) {
+            text = "🗑 This message was deleted";
+        }
+
+        if (data.unsent) {
+            text = "🚫 You unsent a message";
+        }
+
+        if (data.edited) {
+            text += " (edited)";
+        }
+
+        div.innerHTML = `
+            <div class="msg-content">${text}</div>
+
+            ${data.user === username ? `
+                <button class="msg-menu-btn"
+                    onclick="toggleMessageMenu('${key}')">
+                    ⋮
+                </button>
+
+                <div id="menu-${key}" class="msg-menu hidden">
+
+                    <button onclick="editMessage('${key}')">
+                        ✏ Edit
+                    </button>
+
+                    <button onclick="deleteMessage('${key}')">
+                        🗑 Delete
+                    </button>
+
+                    <button onclick="unsendMessage('${key}')">
+                        🚫 Unsend
+                    </button>
+
+                </div>
+            ` : ""}
+        `;
 
         messagesDiv.appendChild(div);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
     });
+
+    db.ref("chats/" + currentChat).on("child_changed", () => {
+
+        loadMessages();
+
+    });
+
 }
 
 // LOAD CHAT LIST (INBOX)
 function loadChatList() {
+
     const chatListDiv = document.getElementById("chatList");
+    const requestListDiv = document.getElementById("requestList");
 
     db.ref("chats").on("value", snapshot => {
+
         chatListDiv.innerHTML = "";
 
         snapshot.forEach(chat => {
+
             const chatKey = chat.key;
 
             if (chatKey.includes(username)) {
+
                 const users = chatKey.split("_");
                 const otherUser = users[0] === username ? users[1] : users[0];
 
                 const div = document.createElement("div");
-                div.classList.add("chat-item");
-                div.innerText = otherUser;
+                div.className = "chat-item";
+
+                div.innerHTML = `
+                    <strong>${otherUser}</strong>
+                `;
 
                 div.onclick = () => {
+
                     currentChat = chatKey;
 
                     document.getElementById("chatWith").innerText =
                         "Chat with: " + otherUser;
 
                     loadMessages();
+
                     listenStatus(otherUser);
+
                     toggleSidebar();
+
                 };
 
                 chatListDiv.appendChild(div);
+
             }
+
         });
+
     });
 
-    // ✅ HIWALAY NA LISTENER
     db.ref("messageRequests/" + uid).on("value", snapshot => {
+
+        requestListDiv.innerHTML = "";
+
         snapshot.forEach(req => {
+
             const data = req.val();
 
             const div = document.createElement("div");
-            div.classList.add("chat-item");
-            div.innerText = "📩 " + data.fromUsername;
+
+            div.className = "request-item";
+
+            div.innerHTML = `
+                📩 <strong>${data.fromUsername}</strong>
+            `;
 
             div.onclick = () => {
+
                 showRequest(data, req.key);
+
+                toggleSidebar();
+
             };
-            chatListDiv.appendChild(div);
+
+            requestListDiv.appendChild(div);
+
         });
+
     });
+
+    showCategory("chat");
+
 }
 
 // STATUS
@@ -405,7 +514,11 @@ function closeProfile() {
 
         // 🔥 reset UI
         document.getElementById("messageUserBtn").style.display = "inline-block";
-        document.getElementById("addFriendBtn").style.display = "inline-block";
+        const addBtn = document.getElementById("addFriendBtn");
+
+        if (addBtn) {
+            addBtn.style.display = "inline-block";
+        }
         document.getElementById("messageBox").classList.add("hidden");
 
     }, 300);
@@ -463,32 +576,6 @@ function saveProfile() {
     document.querySelector(".edit-profile-btn").classList.remove("hidden");
 }
 
-function saveProfile() {
-
-    const birthday = document.getElementById("profileAgeInput").value;
-    const newBio = document.getElementById("profileBioInput").value;
-
-    db.ref("users/" + currentProfileUser).update({
-        age: birthday,
-        bio: newBio
-    });
-
-    document.getElementById("profileAge").innerText =
-        "Age: " + calculateAge(birthday);
-
-    document.getElementById("profileBio").innerText =
-        newBio;
-
-    document.getElementById("profileAge").classList.remove("hidden");
-    document.getElementById("profileBio").classList.remove("hidden");
-
-    document.getElementById("profileAgeInput").classList.add("hidden");
-    document.getElementById("profileBioInput").classList.add("hidden");
-
-    document.querySelector(".save-profile-btn").classList.add("hidden");
-    document.querySelector(".edit-profile-btn").classList.remove("hidden");
-}
-
 function autoSaveProfile() {
     const ageInput = document.getElementById("profileAgeInput");
     const bioInput = document.getElementById("profileBioInput");
@@ -512,16 +599,16 @@ function autoSaveProfile() {
 
 function openMessageBox() {
 
-    // 🔥 hide buttons
     document.getElementById("messageUserBtn").style.display = "none";
-    document.getElementById("addFriendBtn").style.display = "none";
 
-    // 🔥 show message box
-    const box = document.getElementById("messageBox");
-    box.classList.remove("hidden");
+    const addBtn = document.getElementById("addFriendBtn");
 
-    // 🔥 OPTIONAL: scroll sa baba ng card
-    box.scrollIntoView({ behavior: "smooth" });
+    if (addBtn) {
+        addBtn.style.display = "none";
+    }
+
+    document.getElementById("messageBox").classList.remove("hidden");
+
 }
 
 
@@ -767,6 +854,88 @@ function saveSettings() {
     alert("Settings saved.");
 
     closeSettings();
+
+}
+
+function changeEmail() {
+
+    const newEmail = prompt("Enter new email");
+
+    if (!newEmail) return;
+
+    db.ref("users/" + uid).update({
+        email: newEmail
+    });
+
+    document.getElementById("emailSetting").value = newEmail;
+
+    alert("Email updated.");
+
+}
+
+function changePassword() {
+
+    const pass = prompt("Enter new password");
+
+    if (!pass) return;
+
+    db.ref("users/" + uid).update({
+        password: pass
+    });
+
+    alert("Password updated.");
+
+}
+
+function toggleMessageMenu(id) {
+
+    document
+        .getElementById("menu-" + id)
+        .classList.toggle("hidden");
+
+}
+
+function editMessage(id) {
+
+    const newText = prompt("Edit message");
+
+    if (!newText) return;
+
+    db.ref("chats/" + currentChat + "/" + id).update({
+
+        text: newText,
+
+        edited: true
+
+    });
+
+}
+
+function unsendMessage(id) {
+
+    if (!confirm("Unsend message?")) return;
+
+    db.ref("chats/" + currentChat + "/" + id).update({
+
+        unsent: true,
+
+        text: ""
+
+    });
+
+}
+
+function deleteMessage(id) {
+
+    if (!confirm("Delete this message?")) return;
+
+    db.ref("chats/" + currentChat + "/" + id).update({
+
+        deleted: true,
+
+        text: ""
+
+    });
 
 }
 

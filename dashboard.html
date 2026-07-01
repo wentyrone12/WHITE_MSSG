@@ -70,14 +70,38 @@
         <!-- SIDEBAR -->
         <div class="sidebar" id="sidebar">
 
-            <h3 class="tag-inbox">Inbox</h3>
-            <div id="chatList"></div>
+            <div class="sidebar-header">
+                <h3 class="tag-inbox">Inbox</h3>
+            </div>
+
+            <!-- CATEGORY BUTTONS -->
+            <div class="sidebar-categories">
+
+                <button class="category-btn active" onclick="showCategory('chat')">
+                    💬 Chats
+                </button>
+
+                <button class="category-btn" onclick="showCategory('request')">
+                    📩 Requests
+                </button>
+
+            </div>
+
+            <!-- CHAT LIST -->
+            <div id="chatCategory">
+                <div id="chatList"></div>
+            </div>
+
+            <!-- REQUEST LIST -->
+            <div id="requestCategory" class="hidden">
+                <div id="requestList"></div>
+            </div>
 
             <button class="settings-btn" onclick="openSettings()">
                 ⚙ Settings
             </button>
-            <a href="index.html">Log Out</a>
 
+            <a href="index.html">Log Out</a>
 
         </div>
 
@@ -95,7 +119,19 @@
             <span id="status"></span>
         </div>
 
-        <div id="messages"></div>
+        <div class="conversation-area">
+
+            <div class="conversation-header">
+
+                <h3 id="chatWith"></h3>
+
+                <span id="status"></span>
+
+            </div>
+
+            <div id="messages"></div>
+
+        </div>
 
         <!-- MESSAGE REQUEST OVERLAY -->
         <div id="requestOverlay" class="request-overlay hidden">
@@ -135,7 +171,7 @@
 
             <div class="setting-section">
 
-                <h3>👤 Account</h3>
+                <h3>Account</h3>
 
                 <label>Email</label>
                 <input id="emailSetting" readonly>
@@ -152,39 +188,27 @@
             </div>
 
             <div class="setting-section">
-
-                <h3>🔒 Security</h3>
-
+                <h3>Security</h3>
                 <button onclick="changeEmail()">Change Email</button>
-
                 <button onclick="changePassword()">Change Password</button>
-
                 <button onclick="changePin()">Change PIN</button>
-
             </div>
 
             <div class="setting-section">
 
-                <h3>🔔 Privacy</h3>
+                <h3> Privacy</h3>
 
                 <label>
-
                     <input type="checkbox" id="onlineToggle">
-
                     Show Online Status
-
                 </label>
 
             </div>
-
             <button class="save-setting-btn" onclick="saveSettings()">
                 Save Changes
             </button>
-
         </div>
-
     </div>
-
 </body>
 
 </html>
