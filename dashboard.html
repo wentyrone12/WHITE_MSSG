@@ -1,126 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WHITEMSSG</title>
-<link rel="stylesheet" href="dashboard.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WHITEMSSG</title>
+    <link rel="stylesheet" href="dashboard.css">
 </head>
 
 <body>
 
     <!-- PROFILE OVERLAY -->
-<div id="profileOverlay" class="profile-overlay hidden">
-    <div class="profile-card">
-        <button class="edit-profile-btn" onclick="enableEditProfile()">Edit Profile</button>
-        <button class="save-profile-btn hidden" onclick="saveProfile()">Save</button>
+    <div id="profileOverlay" class="profile-overlay hidden">
+        <div class="profile-card">
+            <button class="edit-profile-btn" onclick="enableEditProfile()">Edit Profile</button>
+            <button class="save-profile-btn hidden" onclick="saveProfile()">Save</button>
 
-        <button class="btn-addmess" id="messageUserBtn" onclick="openMessageBox()">Message</button>
-        <button style="display: none;" id="addFriendBtn" onclick="addFriend()"></button>
-        <div id="messageBox" class="hidden">
-    <textarea id="requestMessage" placeholder="Type your message..."></textarea>
-    <button class="btn-sendmssg" onclick="sendMessageRequest()">Send</button>
-</div>
+            <button class="btn-addmess" id="messageUserBtn" onclick="openMessageBox()">Message</button>
+            <div id="messageBox" class="hidden">
+                <textarea id="requestMessage" placeholder="Type your message..."></textarea>
+                <button class="btn-sendmssg" onclick="sendMessageRequest()">Send</button>
+            </div>
 
-        <button class="close-profile" onclick="closeProfile()">✖</button>
+            <button class="close-profile" onclick="closeProfile()">✖</button>
 
-        <h2 id="profileName"></h2>
+            <h2 id="profileName"></h2>
 
-        <p id="profileAge"></p>
-        <p style="color: gold;" id="profileBio"></p>
+            <p id="profileAge"></p>
+            <p style="color: gold;" id="profileBio"></p>
 
-        <input id="profileAgeInput" type="number" min="0" max="999" oninput="limitDigits(this)" class="hidden" placeholder="Age">
-        <textarea id="profileBioInput" class="hidden" placeholder="Bio" maxlength="20" ></textarea>
-        <div class="follow-stats">
-            <span id="profileFollowers"></span>
-            <span id="profileFollowing"></span>
+            <input id="profileAgeInput" type="date" class="hidden">
+            <textarea id="profileBioInput" class="hidden" placeholder="Bio" maxlength="20"></textarea>
+            <div class="follow-stats">
+                <span id="profileFollowers"></span>
+                <span id="profileFollowing"></span>
+            </div>
+
         </div>
-
     </div>
-</div>
 
-<div class="nametag">Made by Wenxyz</div>
+    <div class="nametag">Made by Wenxyz</div>
 
-<!-- CHAT -->
-<div id="chat" class="screen hidden">
+    <!-- CHAT -->
+    <div id="chat" class="screen hidden">
 
         <button class="btn-pubchat" onclick="togglePublicChat()">🌐</button>
-    
-
-    <section id="pubchat-info" class="pubchat hidden">
-
-    <h2 class="public-tagname"> 🌐 Public Chat</h2>
-
-    <!-- MESSAGES AREA -->
-    <div id="pubMessages"></div>
-
-    <!-- INPUT AREA (FIXED) -->
-    <div class="pub-input">
-        <input type="text" id="pubInput" placeholder="Type message...">
-        <button onclick="sendPublicMessage()">Send</button>
-    </div>
-
-</section>
 
 
+        <section id="pubchat-info" class="pubchat hidden">
 
-    <!-- MENU BUTTON -->
-    <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+            <h2 class="public-tagname"> 🌐 Public Chat</h2>
 
-    <!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
+            <!-- MESSAGES AREA -->
+            <div id="pubMessages"></div>
 
-    <h3 class="tag-inbox">Inbox</h3>
+            <!-- INPUT AREA (FIXED) -->
+            <div class="pub-input">
+                <input type="text" id="pubInput" placeholder="Type message...">
+                <button onclick="sendPublicMessage()">Send</button>
+            </div>
 
-    <div id="chatList"></div>
+        </section>
 
-    <a href="index.html">Log Out</a>
 
-</div>
 
-    <div class="top-bar">
-        <h2 style="background-color: transparent;" id="userDisplay" onclick="openMyProfile()"></h2>
-    </div>
+        <!-- MENU BUTTON -->
+        <div class="menu-btn" onclick="toggleSidebar()">☰</div>
 
-    <div class="search-bar">
-        <input type="text" id="targetUser" placeholder="Search username to chat">
-        <button onclick="startChat()">Search</button>
-    </div>
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
 
-    <div class="chat-info">
-        <h3 id="chatWith"></h3>
-        <span id="status"></span>
-    </div>
+            <h3 class="tag-inbox">Inbox</h3>
+            <div id="chatList"></div>
 
-    <div id="messages"></div>
+            <button class="settings-btn" onclick="openSettings()">
+                ⚙ Settings
+            </button>
+            <a href="index.html">Log Out</a>
 
-    <!-- MESSAGE REQUEST OVERLAY -->
+
+        </div>
+
+        <div class="top-bar">
+            <h2 style="background-color: transparent;" id="userDisplay" onclick="openMyProfile()"></h2>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="targetUser" placeholder="Search username to chat">
+            <button onclick="startChat()">Search</button>
+        </div>
+
+        <div class="chat-info">
+            <h3 id="chatWith"></h3>
+            <span id="status"></span>
+        </div>
+
+        <div id="messages"></div>
+
+        <!-- MESSAGE REQUEST OVERLAY -->
         <div id="requestOverlay" class="request-overlay hidden">
             <div class="request-card">
                 <h3>Message Request</h3>
                 <p id="requestFrom"></p>
-                  <div class="rqmessage-card">
+                <div class="rqmessage-card">
                     <p id="requestText"></p>
-                  </div>
+                </div>
                 <button class="btnacc-dec" onclick="acceptRequest()">Accept</button>
                 <button class="btnacc-dec" onclick="declineRequest()">Decline</button>
             </div>
         </div>
 
-</div>
+    </div>
 
     <div class="input-row">
         <input type="text" id="messageInput" placeholder="Type message...">
         <button onclick="sendMessage()">Send</button>
     </div>
-</div>
+    </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-<script src="dashboard.js"></script>
-<script src="app.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="app.js"></script>
+
+    <div id="settingsOverlay" class="settings-overlay hidden">
+
+        <div class="settings-card">
+
+            <button class="close-profile" onclick="closeSettings()">✖</button>
+
+            <h2>⚙ Settings</h2>
+
+            <div class="setting-section">
+
+                <h3>👤 Account</h3>
+
+                <label>Email</label>
+                <input id="emailSetting" readonly>
+
+                <label>Birthday</label>
+                <input id="birthdaySetting" type="date">
+
+                <label>Age</label>
+                <input id="ageSetting" readonly>
+
+                <label>Bio</label>
+                <textarea id="bioSetting"></textarea>
+
+            </div>
+
+            <div class="setting-section">
+
+                <h3>🔒 Security</h3>
+
+                <button onclick="changeEmail()">Change Email</button>
+
+                <button onclick="changePassword()">Change Password</button>
+
+                <button onclick="changePin()">Change PIN</button>
+
+            </div>
+
+            <div class="setting-section">
+
+                <h3>🔔 Privacy</h3>
+
+                <label>
+
+                    <input type="checkbox" id="onlineToggle">
+
+                    Show Online Status
+
+                </label>
+
+            </div>
+
+            <button class="save-setting-btn" onclick="saveSettings()">
+                Save Changes
+            </button>
+
+        </div>
+
+    </div>
 
 </body>
+
 </html>

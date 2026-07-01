@@ -94,11 +94,12 @@ a {
     color: black;
     padding: 8px;
     border-radius: 20px;
+    width:90%;
     background-color: rgb(177, 23, 23);
     margin: 10px;
     position: absolute;
     bottom: 30px;
-    left: 80px;
+    left: 0px;
     text-decoration: none;
 }
 
@@ -475,12 +476,13 @@ a:hover {
 }
 
 #profileAgeInput {
-    width: 20%;
+    width: 40%;
     background-color: transparent;
     color: white;
     border: 1px solid yellowgreen;
     margin-bottom: 10px;
     text-align: center;
+    justify-content: center;
     padding: 3px 0;
 }
 
@@ -633,4 +635,148 @@ a:hover {
         background: #00ff88;
         border: none;
     }
+}
+
+.settings-btn {
+
+    width: 90%;
+    margin: 10px;
+    padding: 10px;
+    position:absolute;
+    bottom:70px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #00ff88;
+
+    color: black;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+.settings-btn:hover {
+
+    background: gold;
+
+}
+
+.settings-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0, 0, 0, .93);
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    z-index: 99999;
+
+}
+
+.settings-card {
+
+    width: 95%;
+
+    max-width: 430px;
+
+    max-height: 90vh;
+
+    overflow: auto;
+
+    background: #0d0d0d;
+
+    border: 2px solid #00ff88;
+
+    border-radius: 18px;
+
+    padding: 20px;
+
+    color: #00ff88;
+
+    animation: glowCycle 4s linear infinite;
+
+}
+
+.setting-section {
+
+    margin-top: 20px;
+
+}
+
+.setting-section h3 {
+
+    margin-bottom: 10px;
+
+    color: gold;
+
+}
+
+.setting-section input,
+.setting-section textarea {
+
+    width: 100%;
+
+    margin-top: 8px;
+
+    margin-bottom: 15px;
+
+    padding: 10px;
+
+    background: black;
+
+    color: white;
+
+    border: 1px solid #00ff88;
+
+    border-radius: 10px;
+
+}
+
+.setting-section button {
+
+    width: 100%;
+
+    padding: 10px;
+
+    margin-bottom: 10px;
+
+    background: #222;
+
+    color: #00ff88;
+
+    border: 1px solid #00ff88;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+}
+
+.save-setting-btn {
+
+    width: 100%;
+
+    margin-top: 20px;
+
+    padding: 12px;
+
+    background: #00ff88;
+
+    color: black;
+
+    border: none;
+
+    border-radius: 12px;
+
+    font-weight: bold;
+
 }

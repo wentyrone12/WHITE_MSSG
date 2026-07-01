@@ -1,16 +1,14 @@
 // 🔥 Firebase config (DI GINALAW)
 const firebaseConfig = {
-  apiKey: "AIzaSyBQw-3X0a2raGnShlViyN8D7veDlMxCXLI",
-  authDomain: "whitemssg.firebaseapp.com",
-  databaseURL: "https://whitemssg-default-rtdb.firebaseio.com",
-  projectId: "whitemssg",
-  storageBucket: "whitemssg.appspot.com",
-  messagingSenderId: "757785261412",
-  appId: "1:757785261412:web:37974ba59faee1f4baf671",
+    apiKey: "AIzaSyBQw-3X0a2raGnShlViyN8D7veDlMxCXLI",
+    authDomain: "whitemssg.firebaseapp.com",
+    databaseURL: "https://whitemssg-default-rtdb.firebaseio.com",
+    projectId: "whitemssg",
+    storageBucket: "whitemssg.appspot.com",
+    messagingSenderId: "757785261412",
+    appId: "1:757785261412:web:37974ba59faee1f4baf671",
 };
 
-
-autoSaveProfile();
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -27,7 +25,6 @@ if (!uid) {
     window.location.href = "index.html";
 }
 
-// ✅ NOW WORKING
 db.ref("users/" + uid).once("value", snap => {
     const data = snap.val();
 
@@ -46,7 +43,7 @@ db.ref("users/" + uid).once("value", snap => {
     loadPublicMessages();
 });
 
-// LOGIN
+
 function login() {
     username = document.getElementById("username").value.trim();
     if (!username) return alert("Enter username!");
@@ -57,10 +54,10 @@ function login() {
     document.getElementById("userDisplay").innerText = username;
 
     setOnlineStatus(true);
-    loadChatList(); // 🔥 load inbox
+    loadChatList();
 }
 
-// ONLINE STATUS
+
 function setOnlineStatus(status) {
     db.ref("users/" + username).set({
         online: status
@@ -72,7 +69,7 @@ function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("active");
 }
 
-function togglePublicChat(){
+function togglePublicChat() {
     const el = document.getElementById("pubchat-info");
 
     if (el.classList.contains("active")) {
@@ -181,7 +178,7 @@ function loadChatList() {
 
     // ✅ HIWALAY NA LISTENER
     db.ref("messageRequests/" + uid).on("value", snapshot => {
-    snapshot.forEach(req => {
+        snapshot.forEach(req => {
             const data = req.val();
 
             const div = document.createElement("div");
@@ -261,7 +258,7 @@ function loadPublicMessages() {
 }
 
 
-function startChatFromPublic(targetUser){
+function startChatFromPublic(targetUser) {
     if (targetUser === username) return; // wag sarili
 
     currentChat = [username, targetUser].sort().join("_");
@@ -285,26 +282,50 @@ function pinMessage(text) {
     });
 }
 
-function openProfile(targetUser){
+function calculateAge(birthDate) {
+
+    if (!birthDate) return "N/A";
+
+    const birth = new Date(birthDate);
+
+    if (isNaN(birth.getTime())) return "N/A";
+
+    const today = new Date();
+
+    let age = today.getFullYear() - birth.getFullYear();
+
+    const monthDiff = today.getMonth() - birth.getMonth();
+
+    if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
+        age--;
+    }
+
+    return age;
+}
+
+function openProfile(targetUser) {
     const overlay = document.getElementById("profileOverlay");
 
     getUIDByUsername(targetUser, (uidFound) => {
 
-        if (!uidFound){
+        if (!uidFound) {
             alert("User not found!");
             return;
         }
 
         db.ref("messageRequests/" + uid + "/" + currentProfileUser).once("value", snap => {
 
-    const data = snap.val();
+            const data = snap.val();
 
-    if (data && data.cooldownUntil && Date.now() < data.cooldownUntil) {
-        startCooldownUI(data.cooldownUntil);
-    } else {
-        resetMessageBox();
-    }
-});
+            if (data && data.cooldownUntil && Date.now() < data.cooldownUntil) {
+                startCooldownUI(data.cooldownUntil);
+            } else {
+                resetMessageBox();
+            }
+        });
 
         db.ref("users/" + uidFound).once("value", snap => {
             const data = snap.val();
@@ -319,7 +340,7 @@ function openProfile(targetUser){
                 data.username || targetUser;
 
             document.getElementById("profileAge").innerText =
-                "Age: " + (data.age || "N/A");
+                "Age: " + calculateAge(data.age);
 
             document.getElementById("profileBio").innerText =
                 data.bio || "No bio yet";
@@ -331,9 +352,6 @@ function openProfile(targetUser){
                 data.bio || "";
 
             // ✅ BUTTON CONTROL (AFTER isMe)
-            document.getElementById("addFriendBtn").style.display =
-                isMe ? "none" : "inline-block";
-
             document.getElementById("messageUserBtn").style.display =
                 isMe ? "none" : "inline-block";
 
@@ -347,7 +365,7 @@ function openProfile(targetUser){
             document.getElementById("messageBox").classList.add("hidden");
 
             // ✅ STALK MODE
-            if (!isMe){
+            if (!isMe) {
                 document.getElementById("profileAgeInput").classList.add("hidden");
                 document.getElementById("profileBioInput").classList.add("hidden");
             }
@@ -361,28 +379,28 @@ function openProfile(targetUser){
 
     });
 
-    function resetMessageBox(){
-    const btn = document.querySelector(".btn-sendmssg");
-    const textarea = document.getElementById("requestMessage");
+    function resetMessageBox() {
+        const btn = document.querySelector(".btn-sendmssg");
+        const textarea = document.getElementById("requestMessage");
 
-    btn.disabled = false;
-    btn.style.opacity = "1";
-    btn.innerText = "Send";
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.innerText = "Send";
 
-    textarea.disabled = false;
-    textarea.style.opacity = "1";
-    textarea.value = "";
+        textarea.disabled = false;
+        textarea.style.opacity = "1";
+        textarea.value = "";
+    }
+
+    resetMessageBox();
 }
 
-resetMessageBox();
-}
-
-function closeProfile(){
+function closeProfile() {
     const overlay = document.getElementById("profileOverlay");
 
     overlay.classList.remove("active");
 
-    setTimeout(()=>{
+    setTimeout(() => {
         overlay.classList.add("hidden");
 
         // 🔥 reset UI
@@ -390,10 +408,10 @@ function closeProfile(){
         document.getElementById("addFriendBtn").style.display = "inline-block";
         document.getElementById("messageBox").classList.add("hidden");
 
-    },300);
+    }, 300);
 }
 
-function openMyProfile(){
+function openMyProfile() {
     if (!username) return;
 
     openProfile(username);
@@ -402,7 +420,7 @@ function openMyProfile(){
 let currentProfileUser = "";
 
 
-function enableEditProfile(){
+function enableEditProfile() {
 
     // SHOW INPUTS
     document.getElementById("profileAgeInput").classList.remove("hidden");
@@ -419,18 +437,18 @@ function enableEditProfile(){
     document.querySelector(".save-profile-btn").classList.remove("hidden");
 }
 
-function saveProfile(){
+function saveProfile() {
 
-    const newAge = document.getElementById("profileAgeInput").value;
+    const birthday = document.getElementById("profileAgeInput").value;
     const newBio = document.getElementById("profileBioInput").value;
 
     db.ref("users/" + currentProfileUser).update({
-        age: newAge,
+        age: birthday,
         bio: newBio
     });
 
     document.getElementById("profileAge").innerText =
-        "Age: " + newAge;
+        "Age: " + calculateAge(birthday);
 
     document.getElementById("profileBio").innerText =
         newBio;
@@ -442,10 +460,33 @@ function saveProfile(){
     document.getElementById("profileBioInput").classList.add("hidden");
 
     document.querySelector(".save-profile-btn").classList.add("hidden");
+    document.querySelector(".edit-profile-btn").classList.remove("hidden");
+}
+
+function saveProfile() {
+
+    const birthday = document.getElementById("profileAgeInput").value;
+    const newBio = document.getElementById("profileBioInput").value;
+
+    db.ref("users/" + currentProfileUser).update({
+        age: birthday,
+        bio: newBio
+    });
+
+    document.getElementById("profileAge").innerText =
+        "Age: " + calculateAge(birthday);
+
+    document.getElementById("profileBio").innerText =
+        newBio;
+
+    document.getElementById("profileAge").classList.remove("hidden");
+    document.getElementById("profileBio").classList.remove("hidden");
+
+    document.getElementById("profileAgeInput").classList.add("hidden");
+    document.getElementById("profileBioInput").classList.add("hidden");
 
     document.querySelector(".save-profile-btn").classList.add("hidden");
-
-document.querySelector(".edit-profile-btn").classList.remove("hidden");
+    document.querySelector(".edit-profile-btn").classList.remove("hidden");
 }
 
 function autoSaveProfile() {
@@ -469,7 +510,7 @@ function autoSaveProfile() {
     };
 }
 
-function openMessageBox(){
+function openMessageBox() {
 
     // 🔥 hide buttons
     document.getElementById("messageUserBtn").style.display = "none";
@@ -484,13 +525,13 @@ function openMessageBox(){
 }
 
 
-function getUIDByUsername(targetUsername, callback){
+function getUIDByUsername(targetUsername, callback) {
     db.ref("users").once("value", snapshot => {
         let foundUID = null;
 
         snapshot.forEach(user => {
             const data = user.val();
-            if (data.username === targetUsername){
+            if (data.username === targetUsername) {
                 foundUID = user.key;
             }
         });
@@ -498,19 +539,7 @@ function getUIDByUsername(targetUsername, callback){
         callback(foundUID);
     });
 }
-
-function addFriend(){
-    if (!currentProfileUser || currentProfileUser === uid) return;
-
-    db.ref("friendRequests/" + currentProfileUser + "/" + uid).set({
-        from: uid,
-        username: username
-    });
-
-    alert("Friend request sent!");
-}
-
-function sendMessageRequest(){
+function sendMessageRequest() {
     const msg = document.getElementById("requestMessage").value.trim();
     if (!msg || !currentProfileUser) return;
 
@@ -547,7 +576,7 @@ function sendMessageRequest(){
 
 let cooldownInterval = null;
 
-function startCooldownUI(cooldownUntil){
+function startCooldownUI(cooldownUntil) {
 
     const btn = document.querySelector(".btn-sendmssg");
     const textarea = document.getElementById("requestMessage");
@@ -582,7 +611,7 @@ function startCooldownUI(cooldownUntil){
     }, 1000);
 }
 
-function disableMessageBox(){
+function disableMessageBox() {
 
     const btn = document.querySelector(".btn-sendmssg");
     const textarea = document.getElementById("requestMessage");
@@ -597,7 +626,7 @@ function disableMessageBox(){
     textarea.style.opacity = "0.6";
 }
 
-function acceptMessageRequest(senderName, senderUID){
+function acceptMessageRequest(senderName, senderUID) {
 
     currentChat = [username, senderName].sort().join("_");
 
@@ -611,7 +640,7 @@ function acceptMessageRequest(senderName, senderUID){
     db.ref("messageRequests/" + uid).remove();
 }
 
-function resetMessageBox(){
+function resetMessageBox() {
 
     const btn = document.querySelector(".btn-sendmssg");
     const textarea = document.getElementById("requestMessage");
@@ -630,7 +659,7 @@ function resetMessageBox(){
     }
 }
 
-function showRequest(data, requestKey){
+function showRequest(data, requestKey) {
     currentRequest = {
         key: requestKey,
         fromUID: data.fromUID,
@@ -647,7 +676,7 @@ function showRequest(data, requestKey){
     document.getElementById("requestOverlay").classList.remove("hidden");
 }
 
-function acceptRequest(){
+function acceptRequest() {
     if (!currentRequest) return;
 
     currentChat = [username, currentRequest.fromUsername].sort().join("_");
@@ -665,7 +694,7 @@ function acceptRequest(){
     currentRequest = null;
 }
 
-function declineRequest(){
+function declineRequest() {
     if (!currentRequest) return;
 
     db.ref("messageRequests/" + uid + "/" + currentRequest.key).remove();
@@ -675,14 +704,70 @@ function declineRequest(){
     currentRequest = null;
 }
 
-document.addEventListener("keydown", function(e){
-  if (
-    e.key === "F12" ||
-    (e.ctrlKey && e.shiftKey && e.key === "I") ||
-    (e.ctrlKey && e.shiftKey && e.key === "J") ||
-    (e.ctrlKey && e.key === "U")
-  ) {
-    e.preventDefault();
-    alert("Inspect is disabled!");
-  }
+document.addEventListener("keydown", function (e) {
+    if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && e.key === "I") ||
+        (e.ctrlKey && e.shiftKey && e.key === "J") ||
+        (e.ctrlKey && e.key === "U")
+    ) {
+        e.preventDefault();
+        alert("Inspect is disabled!");
+    }
 });
+
+function openSettings() {
+
+    document.getElementById("settingsOverlay")
+        .classList.remove("hidden");
+
+    document.getElementById("settingsOverlay")
+        .classList.add("active");
+
+    db.ref("users/" + uid).once("value", snap => {
+
+        const data = snap.val();
+
+        document.getElementById("emailSetting").value = data.email || "";
+
+        document.getElementById("birthdaySetting").value = data.age || "";
+
+        document.getElementById("ageSetting").value = calculateAge(data.age);
+
+        document.getElementById("bioSetting").value = data.bio || "";
+
+    });
+
+}
+
+function closeSettings() {
+
+    document.getElementById("settingsOverlay")
+        .classList.add("hidden");
+
+}
+
+document.getElementById("birthdaySetting").addEventListener("change", function () {
+
+    document.getElementById("ageSetting").value =
+        calculateAge(this.value);
+
+});
+
+function saveSettings() {
+
+    db.ref("users/" + uid).update({
+
+        age: document.getElementById("birthdaySetting").value,
+
+        bio: document.getElementById("bioSetting").value
+
+    });
+
+    alert("Settings saved.");
+
+    closeSettings();
+
+}
+
+autoSaveProfile();
