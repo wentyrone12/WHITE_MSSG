@@ -74,27 +74,47 @@
                 <h3 class="tag-inbox">Inbox</h3>
             </div>
 
-            <!-- CATEGORY BUTTONS -->
             <div class="sidebar-categories">
+                <button class="category-btn active" onclick="openChats()">💬 Chats</button>
+                <button class="category-btn" onclick="showCategory('request')">📩 Requests</button>
+            </div>
 
-                <button class="category-btn active" onclick="showCategory('chat')">
-                    💬 Chats
-                </button>
+            <!-- LOCK SCREEN -->
+            <div id="sidebarLock" class="sidebar-lock">
 
-                <button class="category-btn" onclick="showCategory('request')">
-                    📩 Requests
+                <div class="lock-icon">🔒</div>
+
+                <h3>Inbox Locked</h3>
+
+                <p>Enter your 6-digit PIN</p>
+
+                <div class="pin-boxes">
+
+                    <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+                    <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+                    <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+                    <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+                    <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+                    <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+                </div>
+
+                <button class="pinbutton" onclick="unlockInbox()">
+                    Unlock
                 </button>
 
             </div>
 
-            <!-- CHAT LIST -->
-            <div id="chatCategory">
-                <div id="chatList"></div>
-            </div>
+            <!-- CONTENT -->
+            <div id="sidebarContent" class="sidebar-content hidden">
 
-            <!-- REQUEST LIST -->
-            <div id="requestCategory" class="hidden">
-                <div id="requestList"></div>
+                <div id="chatCategory">
+                    <div id="chatList"></div>
+                </div>
+
+                <div id="requestCategory" class="hidden">
+                    <div id="requestList"></div>
+                </div>
+
             </div>
 
             <button class="settings-btn" onclick="openSettings()">
@@ -191,7 +211,9 @@
                 <h3>Security</h3>
                 <button onclick="changeEmail()">Change Email</button>
                 <button onclick="changePassword()">Change Password</button>
-                <button onclick="changePin()">Change PIN</button>
+                <button id="pinBtn" onclick="changePin()">
+                    Create PIN
+                </button>
             </div>
 
             <div class="setting-section">

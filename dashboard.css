@@ -110,7 +110,9 @@ a:hover {
 }
 
 #chatList {
-    margin-top: 30px;
+
+    margin-top: 0;
+
 }
 
 .tag-inbox {
@@ -763,7 +765,11 @@ a:hover {
 
 #chatCategory,
 #requestCategory {
-    margin-top: 10px;
+
+    flex: 1;
+
+    overflow-y: auto;
+
 }
 
 #requestList {
@@ -797,85 +803,204 @@ a:hover {
 }
 
 .message {
-
     position: relative;
-
     padding-right: 40px;
-
 }
 
 .msg-menu-btn {
-
     position: absolute;
-
     right: 5px;
-
     top: 5px;
-
     background: none;
-
     border: none;
-
-    color: white;
-
+    color: rgb(8, 8, 8);
     cursor: pointer;
-
     font-size: 18px;
-
 }
 
 .msg-menu {
-
     position: absolute;
-
     right: 0;
-
     top: 30px;
-
     background: #111;
-
     border: 1px solid #00ff88;
-
     border-radius: 10px;
-
     display: flex;
-
     flex-direction: column;
-
-    z-index: 100;
-
+    z-index: 10;
     overflow: hidden;
-
 }
 
 .msg-menu button {
-
     background: none;
-
     border: none;
-
     color: white;
-
     padding: 8px 15px;
-
     cursor: pointer;
-
     text-align: left;
-
 }
 
 .msg-menu button:hover {
-
     background: #00ff88;
-
     color: black;
-
 }
 
 .msg-content {
-
     padding-right: 20px;
-
     word-break: break-word;
+}
+
+.pin-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+}
+
+.pin-card {
+    width: 320px;
+    background: #111;
+    border: 2px solid #00ff88;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    color: #00ff88;
+}
+
+.pin-card input {
+
+    width: 100%;
+    margin: 20px 0;
+    padding: 12px;
+    background: black;
+    color: white;
+    border: 1px solid #00ff88;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 20px;
+    letter-spacing: 8px;
+
+}
+
+.pin-card button {
+
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 10px;
+    background: #00ff88;
+    font-weight: bold;
+    cursor: pointer;
+
+}
+
+.pinbutton {
+    width: 90%;
+    margin: 10px;
+    padding: 10px;
+    border: none;
+    border-radius: 12px;
+    background: #00ff88;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    width: 250px;
+    height: 100vh;
+    background: #111;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    transition: .35s;
+}
+
+.sidebar-content {
+
+    flex: 1;
+
+    overflow-y: auto;
+
+    display: flex;
+    flex-direction: column;
+
+    padding-bottom: 140px;
+
+}
+
+.sidebar-lock {
+
+    flex: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+
+    padding: 20px;
+}
+
+.lock-icon {
+
+    font-size: 60px;
+    margin-bottom: 15px;
+}
+
+
+.pin-boxes {
+
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+
+}
+
+.pin-digit {
+
+    width: 32px;
+    height: 50px;
+
+    background: #181818;
+    border: 2px solid #00ff88;
+
+    border-radius: 10px;
+
+    color: white;
+
+    text-align: center;
+
+    font-size: 22px;
+
+    font-weight: bold;
+
+    outline: none;
+
+    transition: .25s;
+
+}
+
+.pin-digit:focus {
+
+    border-color: gold;
+
+    box-shadow: 0 0 10px #00ff88;
+
+    transform: scale(1.08);
 
 }

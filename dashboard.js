@@ -17,15 +17,25 @@ let currentRequest = null;
 
 let username = "";
 let currentChat = "";
+let inboxUnlocked = false;
+
 
 function showCategory(type) {
+
+    if (!inboxUnlocked) {
+        document.getElementById("sidebarContent").classList.add("hidden");
+        document.getElementById("sidebarLock").style.display = "flex";
+        return;
+    }
+
+    document.getElementById("sidebarLock").style.display = "none";
+    document.getElementById("sidebarContent").classList.remove("hidden");
 
     document.getElementById("chatCategory").classList.add("hidden");
     document.getElementById("requestCategory").classList.add("hidden");
 
-    document.querySelectorAll(".category-btn").forEach(btn => {
-        btn.classList.remove("active");
-    });
+    document.querySelectorAll(".category-btn")
+        .forEach(btn => btn.classList.remove("active"));
 
     if (type === "chat") {
         document.getElementById("chatCategory").classList.remove("hidden");
@@ -76,8 +86,12 @@ function login() {
     document.getElementById("userDisplay").innerText = username;
 
     setOnlineStatus(true);
-    loadChatList();
+}
+
+function openChats() {
+
     showCategory("chat");
+
 }
 
 
@@ -89,7 +103,72 @@ function setOnlineStatus(status) {
 
 // SIDEBAR TOGGLE
 function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("active");
+
+    const sidebar = document.getElementById("sidebar");
+
+    sidebar.classList.toggle("active");
+
+    if (sidebar.classList.contains("active") && !inboxUnlocked) {
+
+        openPinOverlay();
+
+    }
+
+}
+
+function openPinOverlay() {
+
+    const inputs = document.querySelectorAll(".pin-digit");
+
+    inputs.forEach(i => i.value = "");
+
+    document.getElementById("sidebarLock").style.display = "flex";
+
+    setTimeout(() => {
+
+        inputs[0].focus();
+
+    }, 50);
+
+}
+
+function closePinOverlay() {
+
+    document.getElementById("sidebarLock").style.display = "none";
+
+}
+
+function unlockInbox() {
+
+    const pin = [...document.querySelectorAll(".pin-digit")]
+        .map(box => box.value)
+        .join("");
+
+    db.ref("users/" + uid).once("value", snap => {
+
+        const data = snap.val();
+
+        if (!data.pin) {
+            alert("Create your PIN first.");
+            return;
+        }
+
+        if (pin !== data.pin) {
+            alert("Wrong PIN");
+            return;
+        }
+
+        inboxUnlocked = true;
+
+        document.getElementById("sidebarLock").style.display = "none";
+
+        document.getElementById("sidebarContent")
+            .classList.remove("hidden");
+
+        showCategory("chat");
+
+    });
+
 }
 
 function togglePublicChat() {
@@ -298,8 +377,6 @@ function loadChatList() {
 
     });
 
-    showCategory("chat");
-
 }
 
 // STATUS
@@ -316,16 +393,159 @@ window.addEventListener("beforeunload", () => {
     if (username) setOnlineStatus(false);
 });
 
-function sendPublicMessage() {
-    const msg = document.getElementById("pubInput").value.trim();
-    if (!msg) return;
+function loadPublicMessages() {
 
-    db.ref("publicChat").push({
-        user: username,
-        text: msg
+    const container = document.getElementById("pubMessages");
+
+    container.innerHTML = "";
+
+    db.ref("publicChat").off();
+
+    db.ref("publicChat").on("value", snapshot => {
+
+        container.innerHTML = "";
+
+        snapshot.forEach(snap => {
+
+            const data = snap.val();
+            const key = snap.key;
+
+            const div = document.createElement("div");
+            div.className = "message";
+
+            if (data.user === username) {
+                div.classList.add("me");
+            } else {
+                div.classList.add("other");
+            }
+
+            let text = data.text;
+
+            if (data.deleted) {
+                text = "🗑 This message was deleted";
+            }
+
+            if (data.unsent) {
+                text = "🚫 You unsent a message";
+            }
+
+            if (data.edited) {
+                text += " (edited)";
+            }
+
+            div.innerHTML = `
+
+                <strong
+                style="cursor:pointer"
+                onclick="openProfile('${data.user}')">
+
+                ${data.user}
+
+                </strong>
+
+                <div class="msg-content">
+
+                    ${text}
+
+                </div>
+
+                ${data.user === username ? `
+
+                <button
+                class="msg-menu-btn"
+                onclick="togglePublicMenu('${key}')">
+
+                ⋮
+
+                </button>
+
+                <div
+                id="pubmenu-${key}"
+                class="msg-menu hidden">
+
+                    <button onclick="editPublicMessage('${key}')">
+
+                        ✏ Edit
+
+                    </button>
+
+                    <button onclick="deletePublicMessage('${key}')">
+
+                        🗑 Delete
+
+                    </button>
+
+                    <button onclick="unsendPublicMessage('${key}')">
+
+                        🚫 Unsend
+
+                    </button>
+
+                </div>
+
+                `: ''}
+
+            `;
+
+            container.appendChild(div);
+
+        });
+
+        container.scrollTop = container.scrollHeight;
+
     });
 
-    document.getElementById("pubInput").value = "";
+}
+
+function togglePublicMenu(id) {
+
+    document
+        .getElementById("pubmenu-" + id)
+        .classList.toggle("hidden");
+
+}
+
+function editPublicMessage(id) {
+
+    const newText = prompt("Edit message");
+
+    if (!newText) return;
+
+    db.ref("publicChat/" + id).update({
+
+        text: newText,
+
+        edited: true
+
+    });
+
+}
+
+function deletePublicMessage(id) {
+
+    if (!confirm("Delete message?")) return;
+
+    db.ref("publicChat/" + id).update({
+
+        deleted: true,
+
+        text: ""
+
+    });
+
+}
+
+function unsendPublicMessage(id) {
+
+    if (!confirm("Unsend message?")) return;
+
+    db.ref("publicChat/" + id).update({
+
+        unsent: true,
+        text: ""
+
+    });
+
 }
 
 function loadPublicMessages() {
@@ -413,6 +633,74 @@ function calculateAge(birthDate) {
     }
 
     return age;
+}
+
+function changePin() {
+
+    db.ref("users/" + uid).once("value", snap => {
+
+        const data = snap.val();
+
+        if (!data.pin) {
+
+            const pin = prompt("Create 6-digit PIN");
+
+            if (!pin) return;
+
+            if (pin.length != 6) {
+
+                alert("PIN must be 6 digits.");
+
+                return;
+
+            }
+
+            db.ref("users/" + uid).update({
+
+                pin: pin
+
+            });
+
+            document.getElementById("pinBtn").innerText = "Change PIN";
+
+            alert("PIN created.");
+
+            return;
+
+        }
+
+        const oldPin = prompt("Enter current PIN");
+
+        if (oldPin !== data.pin) {
+
+            alert("Wrong PIN.");
+
+            return;
+
+        }
+
+        const newPin = prompt("Enter new PIN");
+
+        if (!newPin) return;
+
+        if (newPin.length != 6) {
+
+            alert("PIN must be 6 digits.");
+
+            return;
+
+        }
+
+        db.ref("users/" + uid).update({
+
+            pin: newPin
+
+        });
+
+        alert("PIN changed.");
+
+    });
+
 }
 
 function openProfile(targetUser) {
@@ -817,11 +1105,24 @@ function openSettings() {
 
         document.getElementById("emailSetting").value = data.email || "";
 
-        document.getElementById("birthdaySetting").value = data.age || "";
+        document.addEventListener("DOMContentLoaded", () => {
 
-        document.getElementById("ageSetting").value = calculateAge(data.age);
+            const birthday = document.getElementById("birthdaySetting");
+
+            if (birthday) {
+                birthday.addEventListener("change", function () {
+                    document.getElementById("ageSetting").value =
+                        calculateAge(this.value);
+                });
+            }
+
+        });
 
         document.getElementById("bioSetting").value = data.bio || "";
+
+
+        document.getElementById("pinBtn").innerText =
+            data.pin ? "Change PIN" : "Create PIN";
 
     });
 
@@ -938,5 +1239,87 @@ function deleteMessage(id) {
     });
 
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const inputs = document.querySelectorAll(".pin-digit");
+
+    inputs.forEach((input, index) => {
+
+        input.type = "password";
+        input.setAttribute("inputmode", "numeric");
+        input.setAttribute("autocomplete", "off");
+        input.maxLength = 1;
+
+        // AUTO NEXT
+        input.addEventListener("input", function () {
+
+            this.value = this.value.replace(/\D/g, "");
+
+            if (this.value.length === 1 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+
+            // AUTO UNLOCK
+            const pin = [...inputs].map(i => i.value).join("");
+
+            if (pin.length === 6) {
+                unlockInbox();
+            }
+
+        });
+
+        // BACKSPACE
+        input.addEventListener("keydown", function (e) {
+
+            if (e.key === "Backspace") {
+
+                if (this.value === "" && index > 0) {
+                    inputs[index - 1].focus();
+                } else {
+                    this.value = "";
+                }
+
+            }
+
+            if (e.key === "ArrowLeft" && index > 0) {
+                e.preventDefault();
+                inputs[index - 1].focus();
+            }
+
+            if (e.key === "ArrowRight" && index < inputs.length - 1) {
+                e.preventDefault();
+                inputs[index + 1].focus();
+            }
+
+        });
+
+    });
+
+    // PASTE SUPPORT
+    inputs[0].addEventListener("paste", function (e) {
+
+        e.preventDefault();
+
+        const text = e.clipboardData
+            .getData("text")
+            .replace(/\D/g, "")
+            .slice(0, 6);
+
+        inputs.forEach(i => i.value = "");
+
+        [...text].forEach((n, i) => {
+            if (inputs[i]) inputs[i].value = n;
+        });
+
+        if (text.length === 6) {
+            unlockInbox();
+        } else {
+            inputs[text.length].focus();
+        }
+
+    });
+
+});
 
 autoSaveProfile();
