@@ -18,14 +18,15 @@ body {
 .container {
   width: 350px;
   max-width: 90%;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
   padding: 30px;
   border-radius: 15px;
   box-shadow: 0 0 15px 8px cyan;
   animation: glowCycle 4s infinite linear;
   text-align: center;
-  
+
 }
+
 @keyframes glowCycle {
   0% {
     border-color: rgb(26, 51, 51);
@@ -112,7 +113,8 @@ button:hover {
 .active {
   display: block;
 }
-.footer-tag{
+
+.footer-tag {
   margin: 0;
   position: absolute;
   bottom: 30px;
@@ -120,49 +122,77 @@ button:hover {
   color: gray;
 }
 
-.messageview-container{
+.messageview-container {
   width: 300px;
   height: 350px;
   background-color: red;
   z-index: 30000000;
 }
-#requestView{
-   width: 300px;
+
+#requestView {
+  width: 300px;
   height: 350px;
   background-color: red;
 }
 
 .request-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 
-    background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-    z-index: 9999;
+  z-index: 9999;
 }
 
 /* CARD */
 .request-card {
-    background: #0a0a0a;
-    border: 1px solid #00ff88;
-    padding: 25px;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 350px;
-    text-align: center;
-    color: #00ff88;
+  background: #0a0a0a;
+  border: 1px solid #00ff88;
+  padding: 25px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 350px;
+  text-align: center;
+  color: #00ff88;
+}
+
+.show-password {
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin: 8px 0 15px;
+
+  color: white;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  user-select: none;
+
+}
+
+.show-password input {
+
+  width: 16px;
+  height: 16px;
+
+  cursor: pointer;
+
 }
 
 /* FIX hidden (IMPORTANT) */
 .hidden {
-    display: none !important;
+  display: none !important;
 }
 
 

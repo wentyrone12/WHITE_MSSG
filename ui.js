@@ -4,18 +4,19 @@ function showForm(formId) {
 }
 
 
-document.addEventListener("keydown", function(e){
-  if (
-    e.key === "F12" ||
-    (e.ctrlKey && e.shiftKey && e.key === "I") ||
-    (e.ctrlKey && e.shiftKey && e.key === "J") ||
-    (e.ctrlKey && e.key === "U")
-  ) {
-    e.preventDefault();
-    alert("Inspect is disabled!");
-  }
-});
+function togglePassword(...ids) {
 
-document.addEventListener("contextmenu", function(e){
-  e.preventDefault();
-});
+    ids.forEach(id => {
+
+        const input = document.getElementById(id);
+
+        if (!input) return;
+
+        input.type =
+            input.type === "password"
+            ? "text"
+            : "password";
+
+    });
+
+}

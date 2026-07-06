@@ -86,6 +86,8 @@ function login() {
     document.getElementById("userDisplay").innerText = username;
 
     setOnlineStatus(true);
+
+    updateSecurityUI(false);
 }
 
 function openChats() {
@@ -118,17 +120,17 @@ function toggleSidebar() {
 
 function openPinOverlay() {
 
-    const inputs = document.querySelectorAll(".pin-digit");
+    const input = document.getElementById("pinInput");
 
-    inputs.forEach(i => i.value = "");
+    input.value = "";
 
     document.getElementById("sidebarLock").style.display = "flex";
 
     setTimeout(() => {
 
-        inputs[0].focus();
+        input.focus();
 
-    }, 50);
+    }, 100);
 
 }
 
@@ -140,25 +142,42 @@ function closePinOverlay() {
 
 function unlockInbox() {
 
-    const pin = [...document.querySelectorAll(".pin-digit")]
-        .map(box => box.value)
-        .join("");
+    const pin = document.getElementById("pinInput").value.trim();
 
     db.ref("users/" + uid).once("value", snap => {
 
         const data = snap.val();
 
+        // 🔐 WALANG PIN PA
         if (!data.pin) {
-            alert("Create your PIN first.");
+
+            document.getElementById("pinInput").value = "";
+
+            document
+                .getElementById("pinRecommendation")
+                .classList.remove("hidden");
+
             return;
+
         }
 
+        // ❌ MALI ANG PIN
         if (pin !== data.pin) {
+
             alert("Wrong PIN");
+
+            document.getElementById("pinInput").value = "";
+
+            document.getElementById("pinInput").focus();
+
             return;
+
         }
 
+        // ✅ TAMA ANG PIN
         inboxUnlocked = true;
+
+        updateSecurityUI(true);
 
         document.getElementById("sidebarLock").style.display = "none";
 
@@ -1079,17 +1098,6 @@ function declineRequest() {
     currentRequest = null;
 }
 
-document.addEventListener("keydown", function (e) {
-    if (
-        e.key === "F12" ||
-        (e.ctrlKey && e.shiftKey && e.key === "I") ||
-        (e.ctrlKey && e.shiftKey && e.key === "J") ||
-        (e.ctrlKey && e.key === "U")
-    ) {
-        e.preventDefault();
-        alert("Inspect is disabled!");
-    }
-});
 
 function openSettings() {
 
@@ -1160,17 +1168,43 @@ function saveSettings() {
 
 function changeEmail() {
 
-    const newEmail = prompt("Enter new email");
+    db.ref("users/" + uid).once("value", snap => {
 
-    if (!newEmail) return;
+        const data = snap.val() || {};
 
-    db.ref("users/" + uid).update({
-        email: newEmail
+        const now = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        // CHECK COOLDOWN
+        if (data.emailChangeCooldown && now < data.emailChangeCooldown) {
+
+            const remaining = data.emailChangeCooldown - now;
+
+            const hrs = Math.floor(remaining / (1000 * 60 * 60));
+            const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+
+            alert(`You can change your email again in ${hrs}h ${mins}m.`);
+
+            return;
+        }
+
+        const newEmail = prompt("Enter new email");
+
+        if (!newEmail) return;
+
+        db.ref("users/" + uid).update({
+
+            email: newEmail,
+
+            emailChangeCooldown: now + oneDay
+
+        });
+
+        document.getElementById("emailSetting").value = newEmail;
+
+        alert("Email updated successfully.");
+
     });
-
-    document.getElementById("emailSetting").value = newEmail;
-
-    alert("Email updated.");
 
 }
 
@@ -1240,82 +1274,66 @@ function deleteMessage(id) {
 
 }
 
+function updateSecurityUI(unlocked) {
+
+    document.getElementById("targetUser").disabled = !unlocked;
+    document.getElementById("searchBtn").disabled = !unlocked;
+
+    if (unlocked) {
+
+        document.getElementById("targetUser").placeholder =
+            "Search username";
+
+        document.getElementById("searchBtn").innerHTML =
+            "Search";
+
+    } else {
+
+        document.getElementById("targetUser").placeholder =
+            "🔒 Unlock PIN first";
+
+        document.getElementById("searchBtn").innerHTML =
+            "🔒 Search";
+
+    }
+
+}
+
+function closePinRecommendation() {
+
+    document
+        .getElementById("pinRecommendation")
+        .classList.add("hidden");
+
+}
+
+function goCreatePin() {
+
+    closePinRecommendation();
+
+    openSettings();
+
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
 
-    const inputs = document.querySelectorAll(".pin-digit");
+    const pin = document.getElementById("pinInput");
 
-    inputs.forEach((input, index) => {
+    pin.addEventListener("input", function () {
 
-        input.type = "password";
-        input.setAttribute("inputmode", "numeric");
-        input.setAttribute("autocomplete", "off");
-        input.maxLength = 1;
+        this.value = this.value.replace(/\D/g, "").substring(0, 6);
 
-        // AUTO NEXT
-        input.addEventListener("input", function () {
-
-            this.value = this.value.replace(/\D/g, "");
-
-            if (this.value.length === 1 && index < inputs.length - 1) {
-                inputs[index + 1].focus();
-            }
-
-            // AUTO UNLOCK
-            const pin = [...inputs].map(i => i.value).join("");
-
-            if (pin.length === 6) {
-                unlockInbox();
-            }
-
-        });
-
-        // BACKSPACE
-        input.addEventListener("keydown", function (e) {
-
-            if (e.key === "Backspace") {
-
-                if (this.value === "" && index > 0) {
-                    inputs[index - 1].focus();
-                } else {
-                    this.value = "";
-                }
-
-            }
-
-            if (e.key === "ArrowLeft" && index > 0) {
-                e.preventDefault();
-                inputs[index - 1].focus();
-            }
-
-            if (e.key === "ArrowRight" && index < inputs.length - 1) {
-                e.preventDefault();
-                inputs[index + 1].focus();
-            }
-
-        });
+        if (this.value.length === 6) {
+            unlockInbox();
+        }
 
     });
 
-    // PASTE SUPPORT
-    inputs[0].addEventListener("paste", function (e) {
+    pin.addEventListener("keydown", function (e) {
 
-        e.preventDefault();
-
-        const text = e.clipboardData
-            .getData("text")
-            .replace(/\D/g, "")
-            .slice(0, 6);
-
-        inputs.forEach(i => i.value = "");
-
-        [...text].forEach((n, i) => {
-            if (inputs[i]) inputs[i].value = n;
-        });
-
-        if (text.length === 6) {
+        if (e.key === "Enter") {
             unlockInbox();
-        } else {
-            inputs[text.length].focus();
         }
 
     });

@@ -10,6 +10,14 @@ import {
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+import {
+  getAuth,
+  verifyBeforeUpdateEmail,
+  EmailAuthProvider,
+  reauthenticateWithCredential
+} from
+  "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 // CONFIG (galing sayo)
 const firebaseConfig = {
   apiKey: "AIzaSyBQw-3X0a2raGnShlViyN8D7veDlMxCXLI",
@@ -32,25 +40,129 @@ import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.
 const db = getDatabase(app);
 
 window.signUp = async () => {
-  const email = document.getElementById("signupEmail").value;
+
+  const username = document.getElementById("signupUsername").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
   const password = document.getElementById("signupPassword").value;
-  const username = document.getElementById("signupUsername").value;
+  const confirmPassword = document.getElementById("signupConfirmPassword").value;
+
+  if (!username) {
+    alert("Enter username.");
+    return;
+  }
+
+  if (!email) {
+    alert("Enter email.");
+    return;
+  }
+
+  if (!password) {
+    alert("Enter password.");
+    return;
+  }
+
+  if (!confirmPassword) {
+    alert("Confirm your password.");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    alert("Passwords do not match.");
+    return;
+  }
+
+  if (password.length < 6) {
+    alert("Password must be at least 6 characters.");
+    return;
+  }
 
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+    const userCredential =
+      await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
     await sendEmailVerification(userCredential.user);
 
-    // 🔥 SAVE USERNAME SA DATABASE
-    await set(ref(db, "users/" + userCredential.user.uid), {
-      email: email,
-      username: username
-    });
+    await set(
+      ref(db, "users/" + userCredential.user.uid),
+      {
+        email: email,
+        username: username
+      }
+    );
 
-    alert("Account created! Verify your email.");
+    alert("Account created successfully!\nPlease verify your email.");
+
+    document.getElementById("signupUsername").value = "";
+    document.getElementById("signupEmail").value = "";
+    document.getElementById("signupPassword").value = "";
+    document.getElementById("signupConfirmPassword").value = "";
+
+    showForm("loginForm");
+
   } catch (error) {
+
     alert(error.message);
+
   }
+
+};
+
+window.changeEmail = async () => {
+
+  const auth = getAuth();
+
+  const user = auth.currentUser;
+
+  if (!user) {
+    alert("Login first.");
+    return;
+  }
+
+  const password = prompt("Enter your current password");
+
+  if (!password) return;
+
+  const newEmail = prompt("Enter your new email");
+
+  if (!newEmail) return;
+
+  try {
+
+    const credential =
+      EmailAuthProvider.credential(
+        user.email,
+        password
+      );
+
+    await reauthenticateWithCredential(
+      user,
+      credential
+    );
+
+    await verifyBeforeUpdateEmail(
+      user,
+      newEmail
+    );
+
+    alert(
+      "Verification email has been sent.\n\n" +
+      "Open your new email and verify it.\n" +
+      "After verification your login email will automatically become:\n\n" +
+      newEmail
+    );
+
+  }
+  catch (err) {
+
+    alert(err.message);
+
+  }
+
 };
 
 // LOGIN
@@ -95,15 +207,4 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-document.addEventListener("keydown", function(e){
-  if (
-    e.key === "F12" ||
-    (e.ctrlKey && e.shiftKey && e.key === "I") ||
-    (e.ctrlKey && e.shiftKey && e.key === "J") ||
-    (e.ctrlKey && e.key === "U")
-  ) {
-    e.preventDefault();
-    alert("Inspect is disabled!");
-  }
-});
 

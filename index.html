@@ -18,6 +18,11 @@
     <div id="loginForm" class="form active">
       <input type="email" id="loginEmail" placeholder="Email">
       <input type="password" id="loginPassword" placeholder="Password">
+
+      <label class="show-password">
+        <input type="checkbox" onclick="togglePassword('loginPassword')">
+        Show Password
+      </label>
       <button onclick="login()">Login</button>
 
       <div class="links">
@@ -31,6 +36,12 @@
       <input type="text" id="signupUsername" placeholder="Username">
       <input type="email" id="signupEmail" placeholder="Email">
       <input type="password" id="signupPassword" placeholder="Password">
+      <input type="password" id="signupConfirmPassword" placeholder="Confirm Password">
+
+      <label class="show-password">
+        <input type="checkbox" onclick="togglePassword('signupPassword','signupConfirmPassword')">
+        Show Password
+      </label>
       <button onclick="signUp()">Create Account</button>
 
       <div class="links">

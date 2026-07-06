@@ -82,20 +82,19 @@
             <!-- LOCK SCREEN -->
             <div id="sidebarLock" class="sidebar-lock">
 
-                <div class="lock-icon">🔒</div>
-
                 <h3>Inbox Locked</h3>
 
                 <p>Enter your 6-digit PIN</p>
 
                 <div class="pin-boxes">
 
-                    <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
-                    <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
-                    <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
-                    <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
-                    <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
-                    <input class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="off">
+                    <div class="pin-boxes">
+
+                        <input id="pinInput" class="pin-single" type="password" maxlength="6" inputmode="numeric"
+                            placeholder="••••••" autocomplete="off">
+
+                    </div>
+
                 </div>
 
                 <button class="pinbutton" onclick="unlockInbox()">
@@ -130,8 +129,15 @@
         </div>
 
         <div class="search-bar">
-            <input type="text" id="targetUser" placeholder="Search username to chat">
-            <button onclick="startChat()">Search</button>
+
+            <input type="text" id="targetUser" placeholder="🔒 Unlock PIN first" disabled>
+
+            <button id="searchBtn" onclick="startChat()" disabled>
+
+                🔒 Search
+
+            </button>
+
         </div>
 
         <div class="chat-info">
@@ -179,8 +185,53 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script src="dashboard.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 
+    <div id="pinRecommendation" class="pin-recommend hidden">
+
+        <div class="pin-card">
+
+            <h2>🔐 Secure your account</h2>
+
+            <p>
+
+                You haven't created a security PIN yet.
+
+                <br><br>
+
+                Creating one protects:
+
+            </p>
+
+            <ul>
+
+                <li>Inbox</li>
+                <li>User Search</li>
+                <li>Private Messages</li>
+
+            </ul>
+
+            <div class="pin-actions">
+
+                <button onclick="goCreatePin()">
+
+                    Create PIN
+
+                </button>
+
+                <button onclick="closePinRecommendation()">
+
+                    Later
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    
     <div id="settingsOverlay" class="settings-overlay hidden">
 
         <div class="settings-card">
