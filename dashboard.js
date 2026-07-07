@@ -1101,34 +1101,32 @@ function declineRequest() {
 
 function openSettings() {
 
-    document.getElementById("settingsOverlay")
-        .classList.remove("hidden");
-
-    document.getElementById("settingsOverlay")
-        .classList.add("active");
+    document.getElementById("settingsOverlay").classList.remove("hidden");
+    document.getElementById("settingsOverlay").classList.add("active");
 
     db.ref("users/" + uid).once("value", snap => {
 
-        const data = snap.val();
+        const data = snap.val() || {};
 
-        document.getElementById("emailSetting").value = data.email || "";
+        // EMAIL
+        const user = firebase.auth().currentUser;
 
-        document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("emailSetting").value =
+            user ? user.email : (data.email || "");
 
-            const birthday = document.getElementById("birthdaySetting");
+        // BIRTHDAY
+        document.getElementById("birthdaySetting").value =
+            data.age || "";
 
-            if (birthday) {
-                birthday.addEventListener("change", function () {
-                    document.getElementById("ageSetting").value =
-                        calculateAge(this.value);
-                });
-            }
+        // AGE
+        document.getElementById("ageSetting").value =
+            calculateAge(data.age);
 
-        });
+        // BIO
+        document.getElementById("bioSetting").value =
+            data.bio || "";
 
-        document.getElementById("bioSetting").value = data.bio || "";
-
-
+        // PIN BUTTON
         document.getElementById("pinBtn").innerText =
             data.pin ? "Change PIN" : "Create PIN";
 
@@ -1191,14 +1189,6 @@ function changeEmail() {
         const newEmail = prompt("Enter new email");
 
         if (!newEmail) return;
-
-        db.ref("users/" + uid).update({
-
-            email: newEmail,
-
-            emailChangeCooldown: now + oneDay
-
-        });
 
         document.getElementById("emailSetting").value = newEmail;
 

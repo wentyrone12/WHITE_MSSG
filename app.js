@@ -7,16 +7,12 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-  getAuth,
+  signOut,
   verifyBeforeUpdateEmail,
   EmailAuthProvider,
   reauthenticateWithCredential
-} from
-  "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 
 // CONFIG (galing sayo)
 const firebaseConfig = {
@@ -35,7 +31,13 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // SIGN UP
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  update
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const db = getDatabase(app);
 
@@ -149,6 +151,13 @@ window.changeEmail = async () => {
       newEmail
     );
 
+    const db = getDatabase();
+
+    await set(
+      ref(db, "users/" + user.uid + "/pendingEmail"),
+      newEmail
+    );
+
     alert(
       "Verification email has been sent.\n\n" +
       "Open your new email and verify it.\n" +
@@ -158,6 +167,25 @@ window.changeEmail = async () => {
 
   }
   catch (err) {
+
+    if (
+      err.code === "auth/invalid-credential" ||
+      err.code === "auth/wrong-password"
+    ) {
+
+      alert("Wrong password.");
+
+      return;
+
+    }
+
+    if (err.code === "auth/email-already-in-use") {
+
+      alert("Email already exists.");
+
+      return;
+
+    }
 
     alert(err.message);
 
@@ -180,6 +208,34 @@ window.login = async () => {
 
     // 🔥 SAVE UID SA LOCAL STORAGE
     localStorage.setItem("uid", userCredential.user.uid);
+
+    const snap = await get(
+      ref(db, "users/" + userCredential.user.uid)
+    );
+
+    if (snap.exists()) {
+
+      const data = snap.val();
+
+      if (data.pendingEmail) {
+
+        await update(
+          ref(db, "users/" + userCredential.user.uid),
+          {
+
+            email: userCredential.user.email,
+
+            pendingEmail: null,
+
+            emailChangeCooldown:
+              Date.now() + 7 * 24 * 60 * 60 * 1000
+
+          }
+        );
+
+      }
+
+    }
 
     window.location.href = "dashboard.html";
 
