@@ -91,7 +91,7 @@
                     <div class="pin-boxes">
 
                         <input id="pinInput" class="pin-single" type="password" maxlength="6" inputmode="numeric"
-                            placeholder="••••••" autocomplete="off">
+                             autocomplete="off">
 
                     </div>
 
@@ -231,7 +231,7 @@
 
     </div>
 
-    
+
     <div id="settingsOverlay" class="settings-overlay hidden">
 
         <div class="settings-card">
@@ -260,9 +260,11 @@
 
             <div class="setting-section">
                 <h3>Security</h3>
-                <button onclick="changeEmail()">Change Email</button>
-                <button onclick="changePassword()">Change Password</button>
-                <button id="pinBtn" onclick="changePin()">
+                <button onclick="openChangeEmail()">
+                    Change Email
+                </button>
+                <button onclick="openChangePassword()">Change Password</button>
+                <button id="pinBtn" onclick="openChangePin()">
                     Create PIN
                 </button>
             </div>
@@ -281,6 +283,108 @@
                 Save Changes
             </button>
         </div>
+    </div>
+
+    <!-- CHANGE EMAIL CARD -->
+    <div id="changeEmailOverlay" class="settings-overlay hidden">
+
+        <div class="settings-card change-email-card">
+
+            <button class="close-btn" onclick="closeChangeEmail()">
+                ✖
+            </button>
+
+            <h2>📧 Change Email</h2>
+
+            <label>Current Password</label>
+            <input type="password" id="currentPasswordInput" placeholder="Enter current password">
+
+            <label>New Email</label>
+            <input type="email" id="newEmailInput" placeholder="Enter new email">
+
+            <label>Confirm New Email</label>
+            <input type="email" id="confirmEmailInput" placeholder="Confirm new email">
+
+            <button class="submit-btn" onclick="submitEmailChange()">
+                Verify Email Change
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- CHANGE PASSWORD -->
+    <!-- ========================= -->
+
+    <div id="changePasswordOverlay" class="settings-overlay hidden">
+
+        <div class="settings-card change-email-card">
+
+            <button class="close-btn" onclick="closeChangePassword()">
+                ✖
+            </button>
+
+            <h2>🔒 Change Password</h2>
+
+            <label>Current Password</label>
+            <input type="password" id="currentPasswordChange" placeholder="Enter current password">
+
+            <label>New Password</label>
+            <input type="password" id="newPasswordChange" placeholder="Enter new password">
+
+            <label>Confirm Password</label>
+            <input type="password" id="confirmPasswordChange" placeholder="Confirm password">
+
+            <button class="submit-btn" onclick="submitPasswordChange()">
+
+                Change Password
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ========================= -->
+    <!-- CHANGE PIN -->
+    <!-- ========================= -->
+
+    <div id="changePinOverlay" class="settings-overlay hidden">
+
+        <div class="settings-card change-email-card">
+
+            <button class="close-btn" onclick="closeChangePin()">
+
+                ✖
+
+            </button>
+
+            <h2>🔐 Create / Change PIN</h2>
+
+            <label>Current PIN</label>
+
+            <input maxlength="6" inputmode="numeric" id="oldPinInput" placeholder="Current PIN">
+
+            <label>New PIN</label>
+
+            <input maxlength="6" inputmode="numeric" id="newPinInput" placeholder="New PIN">
+
+            <label>Confirm PIN</label>
+
+            <input maxlength="6" inputmode="numeric" id="confirmPinInput" placeholder="Confirm PIN">
+
+            <button class="submit-btn" onclick="submitPinChange()">
+
+                Save PIN
+
+            </button>
+
+        </div>
+
     </div>
 </body>
 

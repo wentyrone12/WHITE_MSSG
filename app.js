@@ -114,7 +114,10 @@ window.signUp = async () => {
 
 };
 
-window.changeEmail = async () => {
+window.changeEmail = async (
+  password,
+  newEmail
+) => {
 
   const auth = getAuth();
 
@@ -125,13 +128,6 @@ window.changeEmail = async () => {
     return;
   }
 
-  const password = prompt("Enter your current password");
-
-  if (!password) return;
-
-  const newEmail = prompt("Enter your new email");
-
-  if (!newEmail) return;
 
   try {
 

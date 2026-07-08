@@ -289,15 +289,15 @@ function loadMessages() {
                 <div id="menu-${key}" class="msg-menu hidden">
 
                     <button onclick="editMessage('${key}')">
-                        ✏ Edit
+                         Edit
                     </button>
 
                     <button onclick="deleteMessage('${key}')">
-                        🗑 Delete
+                         Delete
                     </button>
 
                     <button onclick="unsendMessage('${key}')">
-                        🚫 Unsend
+                         Unsend
                     </button>
 
                 </div>
@@ -484,19 +484,19 @@ function loadPublicMessages() {
 
                     <button onclick="editPublicMessage('${key}')">
 
-                        ✏ Edit
+                         Edit
 
                     </button>
 
                     <button onclick="deletePublicMessage('${key}')">
 
-                        🗑 Delete
+                        Delete
 
                     </button>
 
                     <button onclick="unsendPublicMessage('${key}')">
 
-                        🚫 Unsend
+                        Unsend
 
                     </button>
 
@@ -654,58 +654,45 @@ function calculateAge(birthDate) {
     return age;
 }
 
-function changePin() {
+function submitPinChange() {
+
+    const oldPin = document
+        .getElementById("oldPinInput")
+        .value.trim();
+
+    const newPin = document
+        .getElementById("newPinInput")
+        .value.trim();
+
+    const confirm = document
+        .getElementById("confirmPinInput")
+        .value.trim();
 
     db.ref("users/" + uid).once("value", snap => {
 
         const data = snap.val();
 
-        if (!data.pin) {
+        if (data.pin) {
 
-            const pin = prompt("Create 6-digit PIN");
+            if (oldPin !== data.pin) {
 
-            if (!pin) return;
-
-            if (pin.length != 6) {
-
-                alert("PIN must be 6 digits.");
-
+                alert("Wrong current PIN.");
                 return;
 
             }
 
-            db.ref("users/" + uid).update({
-
-                pin: pin
-
-            });
-
-            document.getElementById("pinBtn").innerText = "Change PIN";
-
-            alert("PIN created.");
-
-            return;
-
         }
 
-        const oldPin = prompt("Enter current PIN");
-
-        if (oldPin !== data.pin) {
-
-            alert("Wrong PIN.");
-
-            return;
-
-        }
-
-        const newPin = prompt("Enter new PIN");
-
-        if (!newPin) return;
-
-        if (newPin.length != 6) {
+        if (newPin.length !== 6) {
 
             alert("PIN must be 6 digits.");
+            return;
 
+        }
+
+        if (newPin !== confirm) {
+
+            alert("PIN does not match.");
             return;
 
         }
@@ -716,7 +703,13 @@ function changePin() {
 
         });
 
-        alert("PIN changed.");
+        document
+            .getElementById("pinBtn")
+            .innerText = "Change PIN";
+
+        alert("PIN saved.");
+
+        closeChangePin();
 
     });
 
@@ -1101,18 +1094,18 @@ function declineRequest() {
 
 function openSettings() {
 
-    document.getElementById("settingsOverlay").classList.remove("hidden");
-    document.getElementById("settingsOverlay").classList.add("active");
+    const overlay = document.getElementById("settingsOverlay");
 
-    db.ref("users/" + uid).once("value", snap => {
+    overlay.classList.remove("hidden");
+    overlay.classList.add("active");
+
+    db.ref("users/" + uid).once("value").then((snap) => {
 
         const data = snap.val() || {};
 
         // EMAIL
-        const user = firebase.auth().currentUser;
-
         document.getElementById("emailSetting").value =
-            user ? user.email : (data.email || "");
+            data.email || "";
 
         // BIRTHDAY
         document.getElementById("birthdaySetting").value =
@@ -1164,51 +1157,103 @@ function saveSettings() {
 
 }
 
-function changeEmail() {
+async function submitEmailChange() {
 
-    db.ref("users/" + uid).once("value", snap => {
+    const currentPassword =
+        document.getElementById("currentPasswordInput").value.trim();
 
-        const data = snap.val() || {};
+    const newEmail =
+        document.getElementById("newEmailInput").value.trim();
 
-        const now = Date.now();
-        const oneDay = 24 * 60 * 60 * 1000;
+    const confirmEmail =
+        document.getElementById("confirmEmailInput").value.trim();
 
-        // CHECK COOLDOWN
-        if (data.emailChangeCooldown && now < data.emailChangeCooldown) {
+    if (!currentPassword) {
 
-            const remaining = data.emailChangeCooldown - now;
+        alert("Enter current password.");
+        return;
 
-            const hrs = Math.floor(remaining / (1000 * 60 * 60));
-            const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+    }
 
-            alert(`You can change your email again in ${hrs}h ${mins}m.`);
+    if (!newEmail) {
 
-            return;
-        }
+        alert("Enter new email.");
+        return;
 
-        const newEmail = prompt("Enter new email");
+    }
 
-        if (!newEmail) return;
+    if (newEmail !== confirmEmail) {
 
-        document.getElementById("emailSetting").value = newEmail;
+        alert("Emails do not match.");
+        return;
 
-        alert("Email updated successfully.");
+    }
 
-    });
+    try {
+
+        await window.changeEmail(
+            currentPassword,
+            newEmail
+        );
+
+        closeChangeEmail();
+
+        document.getElementById("currentPasswordInput").value = "";
+        document.getElementById("newEmailInput").value = "";
+        document.getElementById("confirmEmailInput").value = "";
+
+    }
+    catch (err) {
+
+        alert(err.message);
+
+    }
 
 }
 
-function changePassword() {
+function submitPasswordChange() {
 
-    const pass = prompt("Enter new password");
+    const current = document
+        .getElementById("currentPasswordChange")
+        .value.trim();
 
-    if (!pass) return;
+    const pass = document
+        .getElementById("newPasswordChange")
+        .value.trim();
 
-    db.ref("users/" + uid).update({
-        password: pass
+    const confirm = document
+        .getElementById("confirmPasswordChange")
+        .value.trim();
+
+    db.ref("users/" + uid).once("value", snap => {
+
+        const data = snap.val();
+
+        if (current !== data.password) {
+
+            alert("Current password is incorrect.");
+            return;
+
+        }
+
+        if (pass !== confirm) {
+
+            alert("Passwords do not match.");
+            return;
+
+        }
+
+        db.ref("users/" + uid).update({
+
+            password: pass
+
+        });
+
+        alert("Password updated.");
+
+        closeChangePassword();
+
     });
-
-    alert("Password updated.");
 
 }
 
@@ -1217,6 +1262,38 @@ function toggleMessageMenu(id) {
     document
         .getElementById("menu-" + id)
         .classList.toggle("hidden");
+
+}
+
+function openChangePin() {
+
+    document
+        .getElementById("changePinOverlay")
+        .classList.remove("hidden");
+
+}
+
+function closeChangePin() {
+
+    document
+        .getElementById("changePinOverlay")
+        .classList.add("hidden");
+
+}
+
+function openChangePassword() {
+
+    document
+        .getElementById("changePasswordOverlay")
+        .classList.remove("hidden");
+
+}
+
+function closeChangePassword() {
+
+    document
+        .getElementById("changePasswordOverlay")
+        .classList.add("hidden");
 
 }
 
@@ -1261,6 +1338,22 @@ function deleteMessage(id) {
         text: ""
 
     });
+
+}
+
+function openChangeEmail() {
+
+    document
+        .getElementById("changeEmailOverlay")
+        .classList.remove("hidden");
+
+}
+
+function closeChangeEmail() {
+
+    document
+        .getElementById("changeEmailOverlay")
+        .classList.add("hidden");
 
 }
 
