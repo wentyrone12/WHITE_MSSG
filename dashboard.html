@@ -2,390 +2,246 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WHITEMSSG</title>
-    <link rel="stylesheet" href="dashboard.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WHITE MSSG - Dashboard</title>
+  <link rel="icon" href="logo.png">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css">
 </head>
 
 <body>
-
-    <!-- PROFILE OVERLAY -->
-    <div id="profileOverlay" class="profile-overlay hidden">
-        <div class="profile-card">
-            <button class="edit-profile-btn" onclick="enableEditProfile()">Edit Profile</button>
-            <button class="save-profile-btn hidden" onclick="saveProfile()">Save</button>
-
-            <button class="btn-addmess" id="messageUserBtn" onclick="openMessageBox()">Message</button>
-            <div id="messageBox" class="hidden">
-                <textarea id="requestMessage" placeholder="Type your message..."></textarea>
-                <button class="btn-sendmssg" onclick="sendMessageRequest()">Send</button>
-            </div>
-
-            <button class="close-profile" onclick="closeProfile()">✖</button>
-
-            <h2 id="profileName"></h2>
-
-            <p id="profileAge"></p>
-            <p style="color: gold;" id="profileBio"></p>
-
-            <input id="profileAgeInput" type="date" class="hidden">
-            <textarea id="profileBioInput" class="hidden" placeholder="Bio" maxlength="20"></textarea>
-            <div class="follow-stats">
-                <span id="profileFollowers"></span>
-                <span id="profileFollowing"></span>
-            </div>
-
+  <!-- APP LAYOUT -->
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <img src="logo.png" alt="logo" class="sidebar-logo">
+          <span class="brand">WHITE<span style="color:#9aa0a6;font-weight:400">_MSSG</span></span>
         </div>
-    </div>
+        <button class="icon-btn close-sidebar" onclick="toggleSidebar()">✕</button>
+      </div>
 
-    <div class="nametag">Made by Wenxyz</div>
+      <div class="sidebar-tabs">
+        <button class="category-btn active" onclick="openChats()">Chats</button>
+        <button class="category-btn" onclick="showCategory('request')">Requests</button>
+      </div>
 
-    <!-- CHAT -->
-    <div id="chat" class="screen hidden">
-
-        <button class="btn-pubchat" onclick="togglePublicChat()">🌐</button>
-
-
-        <section id="pubchat-info" class="pubchat hidden">
-
-            <h2 class="public-tagname"> 🌐 Public Chat</h2>
-
-            <!-- MESSAGES AREA -->
-            <div id="pubMessages"></div>
-
-            <!-- INPUT AREA (FIXED) -->
-            <div class="pub-input">
-                <input type="text" id="pubInput" placeholder="Type message...">
-                <button onclick="sendPublicMessage()">Send</button>
-            </div>
-
-        </section>
-
-
-
-        <!-- MENU BUTTON -->
-        <div class="menu-btn" onclick="toggleSidebar()">☰</div>
-
-        <!-- SIDEBAR -->
-        <div class="sidebar" id="sidebar">
-
-            <div class="sidebar-header">
-                <h3 class="tag-inbox">Inbox</h3>
-            </div>
-
-            <div class="sidebar-categories">
-                <button class="category-btn active" onclick="openChats()">💬 Chats</button>
-                <button class="category-btn" onclick="showCategory('request')">📩 Requests</button>
-            </div>
-
-            <!-- LOCK SCREEN -->
-            <div id="sidebarLock" class="sidebar-lock">
-
-                <h3>Inbox Locked</h3>
-
-                <p>Enter your 6-digit PIN</p>
-
-                <div class="pin-boxes">
-
-                    <div class="pin-boxes">
-
-                        <input id="pinInput" class="pin-single" type="password" maxlength="6" inputmode="numeric"
-                             autocomplete="off">
-
-                    </div>
-
-                </div>
-
-                <button class="pinbutton" onclick="unlockInbox()">
-                    Unlock
-                </button>
-
-            </div>
-
-            <!-- CONTENT -->
-            <div id="sidebarContent" class="sidebar-content hidden">
-
-                <div id="chatCategory">
-                    <div id="chatList"></div>
-                </div>
-
-                <div id="requestCategory" class="hidden">
-                    <div id="requestList"></div>
-                </div>
-
-            </div>
-
-            <button class="settings-btn" onclick="openSettings()">
-                ⚙ Settings
-            </button>
-
-            <a href="index.html">Log Out</a>
-
+      <!-- LOCK SCREEN -->
+      <div id="sidebarLock" class="sidebar-lock">
+        <div class="lock-icon">🔒</div>
+        <h3>Inbox Locked</h3>
+        <p>Enter your 6-digit PIN to unlock</p>
+        <div class="pin-boxes">
+          <input id="pinInput" class="pin-single" type="password" maxlength="6" inputmode="numeric" autocomplete="off"
+            placeholder="••••••">
         </div>
+        <button class="btn-primary" onclick="unlockInbox()">Unlock Inbox</button>
+        <p class="lock-hint">Secure your chats with PIN protection</p>
+      </div>
 
-        <div class="top-bar">
-            <h2 style="background-color: transparent;" id="userDisplay" onclick="openMyProfile()"></h2>
+      <!-- CONTENT -->
+      <div id="sidebarContent" class="sidebar-content hidden">
+        <div id="chatCategory">
+          <div class="section-label">Messages</div>
+          <div id="chatList" class="chat-list"></div>
         </div>
-
-        <div class="search-bar">
-
-            <input type="text" id="targetUser" placeholder="🔒 Unlock PIN first" disabled>
-
-            <button id="searchBtn" onclick="startChat()" disabled>
-
-                🔒 Search
-
-            </button>
-
+        <div id="requestCategory" class="hidden">
+          <div class="section-label">Message Requests</div>
+          <div id="requestList" class="request-list"></div>
         </div>
+      </div>
 
+      <div class="sidebar-footer">
+        <button class="settings-btn" onclick="openSettings()">⚙ Settings</button>
+        <a href="index.html" class="logout-btn">Log Out</a>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <!-- TOP BAR -->
+      <div class="top-bar">
+        <div class="top-left">
+          <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+          <h2 id="userDisplay" class="user-display" onclick="openMyProfile()" style="color: white;"></h2>
+          <span class="online-dot"></span>
+        </div>
+        <div class="top-right">
+          <button class="btn-pubchat" onclick="togglePublicChat()">🌐 Public</button>
+        </div>
+      </div>
+
+      <!-- SEARCH -->
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="targetUser" placeholder="🔒 Unlock PIN first" disabled>
+        </div>
+        <button id="searchBtn" class="btn-search" onclick="startChat()" disabled>Search</button>
+      </div>
+
+      <!-- CHAT AREA -->
+      <div id="chat" class="chat-screen">
         <div class="chat-info">
-            <h3 id="chatWith"></h3>
-            <span id="status"></span>
+          <h3 id="chatWith">Select a conversation</h3>
+          <span id="status" class="status-text"></span>
         </div>
 
         <div class="conversation-area">
-
-            <div class="conversation-header">
-
-                <h3 id="chatWith"></h3>
-
-                <span id="status"></span>
-
-            </div>
-
-            <div id="messages"></div>
-
+          <div id="messages" class="messages"></div>
         </div>
 
-        <!-- MESSAGE REQUEST OVERLAY -->
-        <div id="requestOverlay" class="request-overlay hidden">
-            <div class="request-card">
-                <h3>Message Request</h3>
-                <p id="requestFrom"></p>
-                <div class="rqmessage-card">
-                    <p id="requestText"></p>
-                </div>
-                <button class="btnacc-dec" onclick="acceptRequest()">Accept</button>
-                <button class="btnacc-dec" onclick="declineRequest()">Decline</button>
-            </div>
+        <div class="input-row">
+          <input type="text" id="messageInput" placeholder="Type a message...">
+          <button class="btn-send" onclick="sendMessage()">➤</button>
         </div>
+      </div>
 
+      <div class="nametag">Made by Wenxyz • WHITE_MSSG</div>
+    </main>
+
+    <!-- PUBLIC CHAT SLIDE -->
+    <section id="pubchat-info" class="pubchat hidden">
+      <div class="pubchat-header">
+        <h2>🌐 Public Chat</h2>
+        <button class="icon-btn" onclick="togglePublicChat()">✕</button>
+      </div>
+      <div id="pubMessages" class="pub-messages"></div>
+      <div class="pub-input">
+        <input type="text" id="pubInput" placeholder="Type message...">
+        <button class="btn-send" onclick="sendPublicMessage()">Send</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- OVERLAYS -->
+  <!-- PROFILE -->
+  <div id="profileOverlay" class="overlay hidden">
+    <div class="overlay-card glass profile-card-large">
+      <button class="close-overlay" onclick="closeProfile()">✕</button>
+      <div class="profile-top">
+        <div class="profile-avatar">👤</div>
+        <h2 id="profileName"></h2>
+        <p id="profileAge" class="muted"></p>
+        <p id="profileBio" style="color:gold"></p>
+      </div>
+      <div class="profile-actions">
+        <button class="edit-profile-btn" onclick="enableEditProfile()">Edit Profile</button>
+        <button class="save-profile-btn hidden" onclick="saveProfile()">Save</button>
+        <button class="btn-addmess" id="messageUserBtn" onclick="openMessageBox()">Message</button>
+      </div>
+      <div id="messageBox" class="hidden message-box">
+        <textarea id="requestMessage" placeholder="Type your message..."></textarea>
+        <button class="btn-primary" onclick="sendMessageRequest()">Send Request</button>
+      </div>
+      <input id="profileAgeInput" type="date" class="hidden">
+      <textarea id="profileBioInput" class="hidden" placeholder="Bio" maxlength="80"></textarea>
+      <div class="follow-stats">
+        <span id="profileFollowers"></span>
+        <span id="profileFollowing"></span>
+      </div>
     </div>
+  </div>
 
-    <div class="input-row">
-        <input type="text" id="messageInput" placeholder="Type message...">
-        <button onclick="sendMessage()">Send</button>
+  <!-- REQUEST -->
+  <div id="requestOverlay" class="overlay hidden">
+    <div class="overlay-card glass request-card">
+      <h3>Message Request</h3>
+      <p id="requestFrom" class="muted"></p>
+      <div class="rqmessage-card">
+        <p id="requestText"></p>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px"><button class="btn-primary" style="flex:1"
+          onclick="acceptRequest()">Accept</button><button class="btn-ghost" style="flex:1"
+          onclick="declineRequest()">Decline</button></div>
     </div>
+  </div>
+
+  <!-- PIN RECOMMENDATION -->
+  <div id="pinRecommendation" class="overlay hidden">
+    <div class="overlay-card glass pin-card-large">
+      <h2>🔐 Secure your account</h2>
+      <p>You haven't created a security PIN yet. Creating one protects your inbox and private messages.</p>
+      <ul style="text-align:left;margin:16px 0;color:#9aa0a6">
+        <li>Inbox</li>
+        <li>User Search</li>
+        <li>Private Messages</li>
+      </ul>
+      <div class="pin-actions"><button class="btn-primary" onclick="goCreatePin()">Create PIN</button><button
+          class="btn-ghost" onclick="closePinRecommendation()">Later</button></div>
     </div>
+  </div>
 
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <script src="dashboard.js"></script>
-    <script type="module" src="app.js"></script>
-
-    <div id="pinRecommendation" class="pin-recommend hidden">
-
-        <div class="pin-card">
-
-            <h2>🔐 Secure your account</h2>
-
-            <p>
-
-                You haven't created a security PIN yet.
-
-                <br><br>
-
-                Creating one protects:
-
-            </p>
-
-            <ul>
-
-                <li>Inbox</li>
-                <li>User Search</li>
-                <li>Private Messages</li>
-
-            </ul>
-
-            <div class="pin-actions">
-
-                <button onclick="goCreatePin()">
-
-                    Create PIN
-
-                </button>
-
-                <button onclick="closePinRecommendation()">
-
-                    Later
-
-                </button>
-
-            </div>
-
-        </div>
-
+  <!-- SETTINGS -->
+  <div id="settingsOverlay" class="overlay hidden">
+    <div class="overlay-card glass settings-card-large">
+      <button class="close-overlay" onclick="closeSettings()">✕</button>
+      <h2>⚙ Settings</h2>
+      <div class="setting-section">
+        <h3>Account</h3><label>Email</label><input id="emailSetting" readonly><label>Birthday</label><input
+          id="birthdaySetting" type="date"><label>Age</label><input id="ageSetting" readonly><label>Bio</label><textarea
+          id="bioSetting" maxlength="80"></textarea>
+      </div>
+      <div class="setting-section">
+        <h3>Security</h3><button class="btn-ghost" onclick="openChangeEmail()">Change Email</button><button
+          class="btn-ghost" onclick="openChangePassword()">Change Password</button><button class="btn-ghost" id="pinBtn"
+          onclick="openChangePin()">Create PIN</button>
+      </div>
+      <div class="setting-section">
+        <h3>Privacy</h3><label class="check-label"><input type="checkbox" id="onlineToggle"> Show Online Status</label>
+      </div>
+      <button class="btn-primary" onclick="saveSettings()" style="margin-top:12px">Save Changes</button>
     </div>
+  </div>
 
-
-    <div id="settingsOverlay" class="settings-overlay hidden">
-
-        <div class="settings-card">
-
-            <button class="close-profile" onclick="closeSettings()">✖</button>
-
-            <h2>⚙ Settings</h2>
-
-            <div class="setting-section">
-
-                <h3>Account</h3>
-
-                <label>Email</label>
-                <input id="emailSetting" readonly>
-
-                <label>Birthday</label>
-                <input id="birthdaySetting" type="date">
-
-                <label>Age</label>
-                <input id="ageSetting" readonly>
-
-                <label>Bio</label>
-                <textarea id="bioSetting"></textarea>
-
-            </div>
-
-            <div class="setting-section">
-                <h3>Security</h3>
-                <button onclick="openChangeEmail()">
-                    Change Email
-                </button>
-                <button onclick="openChangePassword()">Change Password</button>
-                <button id="pinBtn" onclick="openChangePin()">
-                    Create PIN
-                </button>
-            </div>
-
-            <div class="setting-section">
-
-                <h3> Privacy</h3>
-
-                <label>
-                    <input type="checkbox" id="onlineToggle">
-                    Show Online Status
-                </label>
-
-            </div>
-            <button class="save-setting-btn" onclick="saveSettings()">
-                Save Changes
-            </button>
-        </div>
+  <!-- CHANGE EMAIL -->
+  <div id="changeEmailOverlay" class="overlay hidden">
+    <div class="overlay-card glass change-card">
+      <button class="close-overlay" onclick="closeChangeEmail()">✕</button>
+      <h2>📧 Change Email</h2>
+      <label>Current Password</label><input type="password" id="currentPasswordInput"
+        placeholder="Enter current password">
+      <label>New Email</label><input type="email" id="newEmailInput" placeholder="Enter new email">
+      <label>Confirm New Email</label><input type="email" id="confirmEmailInput" placeholder="Confirm new email">
+      <button class="btn-primary" onclick="submitEmailChange()" style="margin-top:12px">Verify Email Change</button>
     </div>
+  </div>
 
-    <!-- CHANGE EMAIL CARD -->
-    <div id="changeEmailOverlay" class="settings-overlay hidden">
-
-        <div class="settings-card change-email-card">
-
-            <button class="close-btn" onclick="closeChangeEmail()">
-                ✖
-            </button>
-
-            <h2>📧 Change Email</h2>
-
-            <label>Current Password</label>
-            <input type="password" id="currentPasswordInput" placeholder="Enter current password">
-
-            <label>New Email</label>
-            <input type="email" id="newEmailInput" placeholder="Enter new email">
-
-            <label>Confirm New Email</label>
-            <input type="email" id="confirmEmailInput" placeholder="Confirm new email">
-
-            <button class="submit-btn" onclick="submitEmailChange()">
-                Verify Email Change
-            </button>
-
-        </div>
-
+  <!-- CHANGE PASSWORD -->
+  <div id="changePasswordOverlay" class="overlay hidden">
+    <div class="overlay-card glass change-card">
+      <button class="close-overlay" onclick="closeChangePassword()">✕</button>
+      <h2>🔒 Change Password</h2>
+      <label>Current Password</label><input type="password" id="currentPasswordChange" placeholder="Current">
+      <label>New Password</label><input type="password" id="newPasswordChange" placeholder="New">
+      <label>Confirm Password</label><input type="password" id="confirmPasswordChange" placeholder="Confirm">
+      <button class="btn-primary" onclick="submitPasswordChange()" style="margin-top:12px">Change Password</button>
     </div>
+  </div>
 
-
-    <!-- ========================= -->
-    <!-- CHANGE PASSWORD -->
-    <!-- ========================= -->
-
-    <div id="changePasswordOverlay" class="settings-overlay hidden">
-
-        <div class="settings-card change-email-card">
-
-            <button class="close-btn" onclick="closeChangePassword()">
-                ✖
-            </button>
-
-            <h2>🔒 Change Password</h2>
-
-            <label>Current Password</label>
-            <input type="password" id="currentPasswordChange" placeholder="Enter current password">
-
-            <label>New Password</label>
-            <input type="password" id="newPasswordChange" placeholder="Enter new password">
-
-            <label>Confirm Password</label>
-            <input type="password" id="confirmPasswordChange" placeholder="Confirm password">
-
-            <button class="submit-btn" onclick="submitPasswordChange()">
-
-                Change Password
-
-            </button>
-
-        </div>
-
+  <!-- CHANGE PIN -->
+  <div id="changePinOverlay" class="overlay hidden">
+    <div class="overlay-card glass change-card">
+      <button class="close-overlay" onclick="closeChangePin()">✕</button>
+      <h2>🔐 Create / Change PIN</h2>
+      <label>Current PIN</label><input maxlength="6" inputmode="numeric" id="oldPinInput" placeholder="Current PIN"
+        type="password">
+      <label>New PIN</label><input maxlength="6" inputmode="numeric" id="newPinInput" placeholder="New PIN"
+        type="password">
+      <label>Confirm PIN</label><input maxlength="6" inputmode="numeric" id="confirmPinInput" placeholder="Confirm PIN"
+        type="password">
+      <button class="btn-primary" onclick="submitPinChange()" style="margin-top:12px">Save PIN</button>
     </div>
+  </div>
 
-
-
-    <!-- ========================= -->
-    <!-- CHANGE PIN -->
-    <!-- ========================= -->
-
-    <div id="changePinOverlay" class="settings-overlay hidden">
-
-        <div class="settings-card change-email-card">
-
-            <button class="close-btn" onclick="closeChangePin()">
-
-                ✖
-
-            </button>
-
-            <h2>🔐 Create / Change PIN</h2>
-
-            <label>Current PIN</label>
-
-            <input maxlength="6" inputmode="numeric" id="oldPinInput" placeholder="Current PIN">
-
-            <label>New PIN</label>
-
-            <input maxlength="6" inputmode="numeric" id="newPinInput" placeholder="New PIN">
-
-            <label>Confirm PIN</label>
-
-            <input maxlength="6" inputmode="numeric" id="confirmPinInput" placeholder="Confirm PIN">
-
-            <button class="submit-btn" onclick="submitPinChange()">
-
-                Save PIN
-
-            </button>
-
-        </div>
-
-    </div>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="dashboard.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 
 </html>
