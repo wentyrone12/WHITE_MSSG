@@ -57,7 +57,7 @@ body {
 .sidebar {
   width: 340px;
   min-width: 340px;
-  height: 90vh;
+  height: 92vh;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
   border-right: 1px solid var(--border);
   backdrop-filter: blur(24px);
