@@ -926,6 +926,128 @@ function getUIDByUsername(targetUsername, callback) {
         callback(foundUID);
     });
 }
+
+
+function loadPublicMessages() {
+    const pubDiv = document.getElementById("pubMessages");
+    if (!pubDiv) return;
+    pubDiv.innerHTML = "<p style='color:#6b7280;text-align:center;padding:20px'>Loading public chat...</p>";
+    try { db.ref("publicMessages").off(); } catch (e) { }
+
+    db.ref("publicMessages").limitToLast(100).on("child_added", snap => {
+        const data = snap.val();
+        if (!data) return;
+        if (pubDiv.innerHTML.includes("Loading")) pubDiv.innerHTML = "";
+
+        const isMe = data.user === username;
+        const safeUser = (data.user || "").replace(/</g, "&lt;");
+        const safeText = (data.text || "").replace(/</g, "&lt;");
+
+        const msgEl = document.createElement("div");
+        msgEl.style.cssText = "max-width:80%;margin:8px 0;padding:10px 14px;border-radius:14px;background:" + (isMe ? "#00ff88;color:#000;margin-left:auto" : "rgba(255,255,255,0.08)") + ";cursor:default;";
+
+        // DITO YUNG CLICKABLE USERNAME
+        msgEl.innerHTML = `
+            <div onclick="openPublicUserProfile('${safeUser}')" 
+                 style="font-size:1rem;font-weight:1000;opacity:0.9;cursor:pointer;color:${isMe ? '#000' : '#00ff88'};text-decoration:underline">
+                 ${safeUser} ${isMe ? '' : ''}
+            </div>
+            <div style="margin-top:7px">${safeText}</div>
+            <small style="font-size:0.65rem;opacity:0.5">${data.time ? new Date(data.time).toLocaleTimeString() : ""}</small>
+        `;
+
+        pubDiv.appendChild(msgEl);
+        pubDiv.scrollTop = pubDiv.scrollHeight;
+    });
+}
+
+function sendPublicMessage() {
+    const input = document.getElementById("pubInput");
+    const text = input.value.trim();
+    if (!text) return;
+    if (!username) {
+        alert("Username loading pa...");
+        return;
+    }
+    db.ref("publicMessages").push({
+        user: username,
+        text: text,
+        time: Date.now()
+    }).then(() => { input.value = ""; });
+}
+
+function openPublicUserProfile(clickedUsername) {
+    if (!clickedUsername) return;
+
+    if (clickedUsername === username) {
+        openMyProfile();
+        return;
+    }
+
+    db.ref("users").orderByChild("username").equalTo(clickedUsername).once("value", snap => {
+        const users = snap.val();
+        if (!users) {
+            alert("User not found: " + clickedUsername);
+            return;
+        }
+        const uid = Object.keys(users)[0];
+        const userData = users[uid];
+
+        document.getElementById("profileName").innerText = userData.username || clickedUsername;
+        document.getElementById("profileBio").innerText = userData.bio || "No bio";
+        document.getElementById("profileAge").innerText = userData.age ? "Birthday: " + userData.age : "";
+        document.getElementById("profileFollowers").innerText = userData.followers ? userData.followers + " Followers" : "";
+        document.getElementById("profileFollowing").innerText = userData.following ? userData.following + " Following" : "";
+
+        const editBtn = document.querySelector(".edit-profile-btn");
+        const saveBtn = document.querySelector(".save-profile-btn");
+        const messageBtn = document.getElementById("messageUserBtn");
+        const ageInput = document.getElementById("profileAgeInput");
+        const bioInput = document.getElementById("profileBioInput");
+
+        if (editBtn) editBtn.classList.add("hidden");
+        if (saveBtn) saveBtn.classList.add("hidden");
+        if (ageInput) ageInput.classList.add("hidden");
+        if (bioInput) bioInput.classList.add("hidden");
+
+        if (messageBtn) {
+            messageBtn.classList.remove("hidden");
+            messageBtn.innerText = "Message " + clickedUsername;
+            messageBtn.style.display = "block";
+        }
+
+        document.getElementById("profileOverlay").classList.remove("hidden");
+
+        window.currentViewedUser = clickedUsername;
+        window.currentViewedUid = uid;
+    });
+}
+
+const originalOpenMyProfile = window.openMyProfile;
+window.openMyProfile = function () {
+    if (originalOpenMyProfile) originalOpenMyProfile();
+
+    setTimeout(() => {
+        const editBtn = document.querySelector(".edit-profile-btn");
+        const messageBtn = document.getElementById("messageUserBtn");
+        if (editBtn) editBtn.classList.remove("hidden");
+        if (messageBtn) messageBtn.classList.add("hidden");
+    }, 100);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const pubInput = document.getElementById("pubInput");
+    if (pubInput) {
+        pubInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                sendPublicMessage();
+            }
+        });
+    }
+});
+
+
 function sendMessageRequest() {
     const msg = document.getElementById("requestMessage").value.trim();
     if (!msg || !currentProfileUser) return;

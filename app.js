@@ -258,5 +258,3 @@ onAuthStateChanged(auth, (user) => {
     console.log("User already logged in");
   }
 });
-
-
