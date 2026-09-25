@@ -165,8 +165,8 @@ window.changeEmail = async (
   catch (err) {
 
     if (
-      err.code === "auth/invalid-credential" ||
-      err.code === "auth/wrong-password"
+      err.code === "invalid-credential" ||
+      err.code === "wrong-password"
     ) {
 
       alert("Wrong password.");
@@ -175,7 +175,7 @@ window.changeEmail = async (
 
     }
 
-    if (err.code === "auth/email-already-in-use") {
+    if (err.code === "email-already-in-use") {
 
       alert("Email already exists.");
 
@@ -246,7 +246,7 @@ window.resetPassword = async () => {
 
   try {
     await sendPasswordResetEmail(auth, email);
-    alert("Password reset email sent!");
+    alert("Password reset email sent!! check your email spam!!");
   } catch (error) {
     alert(error.message);
   }

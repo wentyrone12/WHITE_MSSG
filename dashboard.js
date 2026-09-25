@@ -1093,7 +1093,7 @@ function sendMessageRequest() {
 
             if (existing?.cooldownUntil && Date.now() < existing.cooldownUntil) {
                 startCooldownUI(existing.cooldownUntil);
-                alert("Cooldown!! 24hours ");
+                alert("Cooldown!!");
                 return;
             }
 
