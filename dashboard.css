@@ -613,7 +613,7 @@ body {
   right: 0;
   top: 0;
   width: 380px;
-  height: 100vh;
+  height: 90vh;
   max-width: 90vw;
   background: var(--bg2);
   border-left: 1px solid var(--border);

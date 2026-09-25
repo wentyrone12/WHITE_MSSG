@@ -725,7 +725,11 @@ function openProfile(targetUser) {
             return;
         }
 
-        db.ref("messageRequests/" + uid + "/" + currentProfileUser).once("value", snap => {
+        currentProfileUser = uidFound;
+        window.currentViewedUser = targetUser;
+        window.currentViewedUid = uidFound;
+
+        db.ref("messageRequests/" + uidFound + "/" + uid).once("value", snap => {
 
             const data = snap.val();
 
@@ -829,8 +833,6 @@ function openMyProfile() {
 
     openProfile(username);
 }
-
-let currentProfileUser = "";
 
 
 function enableEditProfile() {
@@ -993,6 +995,10 @@ function openPublicUserProfile(clickedUsername) {
         const uid = Object.keys(users)[0];
         const userData = users[uid];
 
+        currentProfileUser = uid;
+        window.currentViewedUser = clickedUsername;
+        window.currentViewedUid = uid;
+
         document.getElementById("profileName").innerText = userData.username || clickedUsername;
         document.getElementById("profileBio").innerText = userData.bio || "No bio";
         document.getElementById("profileAge").innerText = userData.age ? "Birthday: " + userData.age : "";
@@ -1018,8 +1024,6 @@ function openPublicUserProfile(clickedUsername) {
 
         document.getElementById("profileOverlay").classList.remove("hidden");
 
-        window.currentViewedUser = clickedUsername;
-        window.currentViewedUid = uid;
     });
 }
 
@@ -1047,78 +1051,73 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+let currentProfileUser = "";
+
 
 function sendMessageRequest() {
-    const msg = document.getElementById("requestMessage").value.trim();
-    if (!msg || !currentProfileUser) return;
-
-    const ref = db.ref("messageRequests/" + currentProfileUser + "/" + uid);
-
-    ref.once("value", snap => {
-
-        const data = snap.val();
-
-        // 🔥 IF EXISTS AND STILL IN COOLDOWN
-        if (data && data.cooldownUntil && Date.now() < data.cooldownUntil) {
-            startCooldownUI(data.cooldownUntil);
-            return;
-        }
-
-        const now = Date.now();
-        const cooldown = now + (24 * 60 * 60 * 1000); // 24 hours
-
-        ref.set({
-            fromUID: uid,
-            fromUsername: username,
-            message: msg,
-            sentAt: now,
-            cooldownUntil: cooldown
-        });
-
-        document.getElementById("requestMessage").value = "";
-
-        startCooldownUI(cooldown);
-
-        alert("Message request sent!");
-    });
-}
-
-let cooldownInterval = null;
-
-function startCooldownUI(cooldownUntil) {
-
-    const btn = document.querySelector(".btn-sendmssg");
     const textarea = document.getElementById("requestMessage");
 
-    btn.disabled = true;
-    textarea.disabled = true;
+    if (!textarea) {
+        alert("somethings wrong!!");
+        return;
+    }
 
-    btn.style.opacity = "0.4";
-    textarea.style.opacity = "0.6";
+    const msg = textarea.value.trim();
+    const targetUID = currentProfileUser;
 
-    btn.innerText = "Wait 24h";
+    if (!uid) {
+        alert("you must log-in first!!");
+        return;
+    }
 
-    if (cooldownInterval) clearInterval(cooldownInterval);
+    if (!targetUID) {
+        alert("No 4ecipient received!!!");
+        return;
+    }
 
-    cooldownInterval = setInterval(() => {
+    if (targetUID === uid) {
+        alert("ERROR!!");
+        return;
+    }
 
-        const now = Date.now();
-        const remaining = cooldownUntil - now;
+    if (!msg) {
+        alert("you must type first!!");
+        return;
+    }
 
-        if (remaining <= 0) {
-            clearInterval(cooldownInterval);
-            resetMessageBox();
-            return;
-        }
+    const requestRef = db.ref("messageRequests/" + targetUID + "/" + uid);
 
-        const hrs = Math.floor(remaining / (1000 * 60 * 60));
-        const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((remaining % (1000 * 60)) / 1000);
+    requestRef.once("value")
+        .then((snap) => {
+            const existing = snap.val();
 
-        btn.innerText = `Wait ${hrs}h ${mins}m ${secs}s`;
+            if (existing?.cooldownUntil && Date.now() < existing.cooldownUntil) {
+                startCooldownUI(existing.cooldownUntil);
+                alert("Cooldown!! 24hours ");
+                return;
+            }
 
-    }, 1000);
+            const now = Date.now();
+            const cooldownUntil = now + 24 * 60 * 60 * 1000;
+
+            return requestRef.set({
+                fromUID: uid,
+                fromUsername: username,
+                message: msg,
+                sentAt: now,
+                cooldownUntil: cooldownUntil
+            }).then(() => {
+                textarea.value = "";
+                startCooldownUI(cooldownUntil);
+                alert("Message request sent!");
+            });
+        })
+        .catch((error) => {
+            console.error("Message request failed:", error);
+            alert("your message not sent!!: " + error.message);
+        });
 }
+
 
 function disableMessageBox() {
 
@@ -1149,17 +1148,53 @@ function acceptMessageRequest(senderName, senderUID) {
     db.ref("messageRequests/" + uid).remove();
 }
 
-function resetMessageBox() {
-
+function startCooldownUI(cooldownUntil) {
     const btn = document.querySelector(".btn-sendmssg");
     const textarea = document.getElementById("requestMessage");
 
+    if (!btn || !textarea) {
+        console.error("Missing message request elements:", { btn, textarea });
+        return;
+    }
+
+    btn.disabled = true;
+    textarea.disabled = true;
+    btn.style.opacity = "0.4";
+    textarea.style.opacity = "0.6";
+
+    if (cooldownInterval) clearInterval(cooldownInterval);
+
+    function updateCooldown() {
+        const remaining = cooldownUntil - Date.now();
+
+        if (remaining <= 0) {
+            clearInterval(cooldownInterval);
+            cooldownInterval = null;
+            resetMessageBox();
+            return;
+        }
+
+        const hrs = Math.floor(remaining / 3600000);
+        const mins = Math.floor((remaining % 3600000) / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+
+        btn.innerText = `Wait ${hrs}h ${mins}m ${secs}s`;
+    }
+
+    updateCooldown();
+    cooldownInterval = setInterval(updateCooldown, 1000);
+}
+
+function resetMessageBox() {
+    const btn = document.querySelector(".btn-sendmssg");
+    const textarea = document.getElementById("requestMessage");
+
+    if (!btn || !textarea) return;
+
     btn.disabled = false;
     textarea.disabled = false;
-
     btn.style.opacity = "1";
     textarea.style.opacity = "1";
-
     btn.innerText = "Send";
 
     if (cooldownInterval) {
