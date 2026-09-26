@@ -191,11 +191,26 @@ window.changeEmail = async (
 
 // LOGIN
 window.login = async () => {
-  const email = document.getElementById("loginEmail").value;
+  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
   const password = document.getElementById("loginPassword").value;
+  if (!email || !password) { alert("Enter your email and password."); return; }
+
+  // Client-side guard: remember failed attempts in this browser. For enforceable
+  // account-wide lockout, move this check to a trusted server/Cloud Function.
+  const attemptKey = "white_login_security_" + email;
+  const now = Date.now();
+  let guard = {};
+  try { guard = JSON.parse(localStorage.getItem(attemptKey) || "{}"); } catch (_) {}
+  if (guard.lockUntil && now < guard.lockUntil) {
+    const hours = Math.ceil((guard.lockUntil - now) / 3600000);
+    alert(`Account temporarily held. Try again in about ${hours} hour(s).`);
+    return;
+  }
+  if (guard.lockUntil && now >= guard.lockUntil) guard = { attempts: 0, lockUntil: 0 };
 
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    localStorage.removeItem(attemptKey);
 
     if (!userCredential.user.emailVerified) {
       alert("Verify your email first!");
@@ -236,7 +251,15 @@ window.login = async () => {
     window.location.href = "dashboard.html";
 
   } catch (error) {
-    alert(error.message);
+    guard.attempts = (guard.attempts || 0) + 1;
+    if (guard.attempts >= 4) {
+      guard = { attempts: 4, lockUntil: Date.now() + 24 * 60 * 60 * 1000 };
+      localStorage.setItem(attemptKey, JSON.stringify(guard));
+      alert("4 failed login attempts. This browser is locked for 24 hours.");
+    } else {
+      localStorage.setItem(attemptKey, JSON.stringify(guard));
+      alert(`Incorrect login details. ${4 - guard.attempts} attempt(s) remaining.`);
+    }
   }
 };
 

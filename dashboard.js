@@ -140,54 +140,58 @@ function closePinOverlay() {
 
 }
 
-function unlockInbox() {
-
+async function unlockInbox() {
     const pin = document.getElementById("pinInput").value.trim();
-
-    db.ref("users/" + uid).once("value", snap => {
-
-        const data = snap.val();
-
-        // 🔐 WALANG PIN PA
+    const securityRef = db.ref("users/" + uid + "/pinSecurity");
+    const now = Date.now();
+    try {
+        const securitySnap = await securityRef.once("value");
+        let security = securitySnap.val() || { attempts: 0, lockUntil: 0 };
+        if (security.lockUntil && now < security.lockUntil) {
+            const remaining = Math.ceil((security.lockUntil - now) / 3600000);
+            alert(`PIN access is held. Try again in about ${remaining} hour(s).`);
+            return;
+        }
+        if (security.lockUntil && now >= security.lockUntil) {
+            security = { attempts: 0, lockUntil: 0 };
+            await securityRef.set(security);
+        }
+        const snap = await db.ref("users/" + uid).once("value");
+        const data = snap.val() || {};
         if (!data.pin) {
-
             document.getElementById("pinInput").value = "";
-
-            document
-                .getElementById("pinRecommendation")
-                .classList.remove("hidden");
-
+            document.getElementById("pinRecommendation").classList.remove("hidden");
             return;
-
         }
-
-        // ❌ MALI ANG PIN
         if (pin !== data.pin) {
-
-            alert("Wrong PIN");
-
+            const result = await securityRef.transaction(current => {
+                current = current || { attempts: 0, lockUntil: 0 };
+                if (current.lockUntil && Date.now() < current.lockUntil) return;
+                const attempts = (current.attempts || 0) + 1;
+                return attempts >= 4
+                    ? { attempts: 4, lockUntil: Date.now() + 24 * 60 * 60 * 1000 }
+                    : { attempts, lockUntil: 0 };
+            });
+            const updated = result.snapshot.val() || {};
             document.getElementById("pinInput").value = "";
-
-            document.getElementById("pinInput").focus();
-
+            if (updated.lockUntil && Date.now() < updated.lockUntil) {
+                alert("4 incorrect PIN attempts. PIN access is held for 24 hours.");
+            } else {
+                alert(`Wrong PIN. ${Math.max(0, 4 - (updated.attempts || 0))} attempt(s) remaining.`);
+                document.getElementById("pinInput").focus();
+            }
             return;
-
         }
-
-        // ✅ TAMA ANG PIN
+        await securityRef.set({ attempts: 0, lockUntil: 0 });
         inboxUnlocked = true;
-
         updateSecurityUI(true);
-
         document.getElementById("sidebarLock").style.display = "none";
-
-        document.getElementById("sidebarContent")
-            .classList.remove("hidden");
-
+        document.getElementById("sidebarContent").classList.remove("hidden");
         showCategory("chat");
-
-    });
-
+    } catch (error) {
+        console.error("PIN verification failed:", error);
+        alert("Could not verify PIN. Check your connection and try again.");
+    }
 }
 
 function togglePublicChat() {
@@ -1579,5 +1583,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 });
+
+const timeElement = document.getElementById("clockTime");
+const dateElement = document.getElementById("clockDate");
+
+function updateClock() {
+    const now = new Date();
+
+    const time = new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+    }).format(now);
+
+    const date = new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+    }).format(now);
+
+    timeElement.textContent = time;
+    dateElement.textContent = date;
+}
+
+// Update agad pag-load ng page
+updateClock();
+
+// Update every second
+setInterval(updateClock, 1000);
 
 autoSaveProfile();

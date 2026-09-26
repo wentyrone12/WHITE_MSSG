@@ -315,6 +315,7 @@ body {
 
 .menu-btn {
   width: 40px;
+  padding: 6px;
   height: 40px;
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -494,7 +495,7 @@ body {
   background: rgba(56, 43, 43, 0.56);
   color: #00ff88;
   align-self: flex-end;
-  border: 1px solid  green;
+  border: 1px solid green;
   border-bottom-right-radius: 6px;
 }
 
@@ -676,6 +677,37 @@ body {
   background: rgba(255, 255, 255, 0.06);
   color: var(--text);
   outline: none
+}
+
+.clock-card {
+  display: flex;
+  width: 30%;
+  padding:4px;
+  text-align: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #1e293b, #111827);
+  border: 1px solid #334155;
+  border-radius: 20px;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.35);
+  position: absolute;
+  right: 10px;
+}
+
+.clock-time {
+  font-size: 12px;
+  font-weight: 70;
+  letter-spacing: 1px;
+  font-variant-numeric: tabular-nums;
+  color: #38bdf8;
+  text-shadow: 0 0 22px rgba(56, 189, 248, 0.25);
+}
+
+.clock-date {
+  text-align: end;
+  margin-top: 8px;
+  margin-right: 15px;
+  font-size: 5px;
+  color: #e2e8f0;
 }
 
 /* OVERLAYS */
