@@ -342,7 +342,7 @@ body {
 
 .top-right {
   display: flex;
-  gap: 8px
+  gap: 6px
 }
 
 .btn-pubchat {
@@ -705,8 +705,8 @@ body {
 .clock-date {
   text-align: end;
   margin-top: 8px;
-  margin-right: 15px;
-  font-size: 5px;
+  margin-right: 6rem;
+  font-size: 10px;
   color: #e2e8f0;
 }
 
@@ -1018,6 +1018,14 @@ body {
     max-width: 85vw
   }
 
+  .clock-date {
+  text-align: end;
+  margin-top: 8px;
+  margin-right: 2px;
+  font-size: 7px;
+  color: #e2e8f0;
+}
+
   .sidebar.active {
     transform: translateX(0)
   }
@@ -1109,38 +1117,4 @@ body {
   .menu-btn {
     display: none !important
   }
-}
-
-/* Light mode support */
-body.light-mode {
-  --bg: #f8f8f9;
-  --bg2: #ffffff;
-  --bg3: #f1f1f3;
-  --card: rgba(0, 0, 0, 0.05);
-  --card2: rgba(0, 0, 0, 0.06);
-  --border: rgba(0, 0, 0, 0.08);
-  --border2: rgba(0, 0, 0, 0.12);
-  --text: #111113;
-  --muted: #6b7280;
-  --dim: #9ca3af;
-  --primary: #111113;
-  --primary-text: #ffffff;
-}
-
-body.light-mode .message.me {
-  background: #111;
-  color: #fff
-}
-
-body.light-mode .btn-primary,
-body.light-mode .btn-search,
-body.light-mode .btn-send,
-body.light-mode .btn-addmess {
-  background: #111;
-  color: #00ff88
-}
-
-body.light-mode .category-btn.active {
-  background: #111;
-  color: #00ff88
 }
