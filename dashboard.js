@@ -1610,10 +1610,7 @@ function updateClock() {
     dateElement.textContent = date;
 }
 
-// Update agad pag-load ng page
 updateClock();
-
-// Update every second
 setInterval(updateClock, 1000);
 
 autoSaveProfile();

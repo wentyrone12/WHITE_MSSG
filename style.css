@@ -14,7 +14,6 @@ body {
   color: #00ff99;
 }
 
-/* CONTAINER */
 .container {
   width: 350px;
   max-width: 90%;
@@ -53,7 +52,6 @@ h1 {
   margin-bottom: 20px;
 }
 
-/* INPUTS */
 input {
   width: 100%;
   padding: 12px;
@@ -69,7 +67,6 @@ input::placeholder {
   color: #777;
 }
 
-/* BUTTON */
 button {
   width: 100%;
   padding: 12px;
@@ -87,7 +84,6 @@ button:hover {
   background: rgb(115, 141, 77);
 }
 
-/* LINKS */
 .links {
   display: flex;
   justify-content: space-between;
@@ -104,8 +100,6 @@ button:hover {
 .links span:hover {
   color: #00ffaa;
 }
-
-/* HIDE FORMS */
 .form {
   display: none;
 }

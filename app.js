@@ -14,7 +14,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
-// CONFIG (galing sayo)
 const firebaseConfig = {
   apiKey: "AIzaSyBQw-3X0a2raGnShlViyN8D7veDlMxCXLI",
   authDomain: "whitemssg.firebaseapp.com",
@@ -200,7 +199,7 @@ window.login = async () => {
   const attemptKey = "white_login_security_" + email;
   const now = Date.now();
   let guard = {};
-  try { guard = JSON.parse(localStorage.getItem(attemptKey) || "{}"); } catch (_) {}
+  try { guard = JSON.parse(localStorage.getItem(attemptKey) || "{}"); } catch (_) { }
   if (guard.lockUntil && now < guard.lockUntil) {
     const hours = Math.ceil((guard.lockUntil - now) / 3600000);
     alert(`Account temporarily held. Try again in about ${hours} hour(s).`);
@@ -263,7 +262,6 @@ window.login = async () => {
   }
 };
 
-// FORGOT PASSWORD
 window.resetPassword = async () => {
   const email = document.getElementById("forgotEmail").value;
 
@@ -275,9 +273,32 @@ window.resetPassword = async () => {
   }
 };
 
-// AUTO LOGIN CHECK
 onAuthStateChanged(auth, (user) => {
   if (user && user.emailVerified) {
     console.log("User already logged in");
+    // When WHITE_MSSG is opened from the installed app, skip the login screen
+    // once Firebase has restored a verified session.
+    if (location.pathname.endsWith("/index.html") || location.pathname.endsWith("/")) {
+      window.location.replace("dashboard.html");
+    }
   }
 });
+
+
+document.addEventListener("contextmenu", function (e) {
+  e.preventDefault();
+});
+
+
+document.addEventListener("keydown", function (e) {
+  if (
+    e.key === "F12" ||
+    (e.ctrlKey && e.shiftKey && e.key === "I") ||
+    (e.ctrlKey && e.shiftKey && e.key === "J") ||
+    (e.ctrlKey && e.key === "U")
+  ) {
+    e.preventDefault();
+  }
+});
+
+loadParticles();
