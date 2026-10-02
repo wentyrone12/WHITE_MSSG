@@ -276,11 +276,6 @@ window.resetPassword = async () => {
 onAuthStateChanged(auth, (user) => {
   if (user && user.emailVerified) {
     console.log("User already logged in");
-    // When WHITE_MSSG is opened from the installed app, skip the login screen
-    // once Firebase has restored a verified session.
-    if (location.pathname.endsWith("/index.html") || location.pathname.endsWith("/")) {
-      window.location.replace("dashboard.html");
-    }
   }
 });
 
