@@ -5,8 +5,6 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   signOut,
   sendEmailVerification,
   sendPasswordResetEmail,
@@ -96,72 +94,34 @@ async function completeGoogleLogin(user) {
 
 function showAuthError(error) {
   const messages = {
-    "auth/file-protocol": "Open WHITE_MSSG from localhost or your HTTPS/GitHub Pages URL. Google Sign-In cannot run from a file:// page.",
-    "auth/popup-closed-by-user": "Google sign-in was closed before it finished.",
-    "auth/popup-blocked": "The Google pop-up was blocked. WHITE_MSSG will try the redirect sign-in flow instead.",
-    "auth/operation-not-supported-in-this-environment": "This browser/PWA mode does not support the Google popup. Try the redirect sign-in flow.",
-    "auth/web-storage-unsupported": "Browser storage is unavailable. Disable strict/private storage blocking and try again.",
-    "auth/unauthorized-domain": "Firebase rejected this website origin. Add the exact hostname you are using (for example: yourname.github.io) under Firebase → Authentication → Settings → Authorized domains.",
-    "auth/invalid-api-key": "Firebase rejected the API key. Make sure this app uses the web app configuration from the same whitemssg Firebase project.",
-    "auth/app-not-authorized": "This web app is not authorized for Firebase Authentication. Check the Firebase project and web app configuration.",
-    "auth/account-exists-with-different-credential": "An account with this email already exists using another sign-in method. Sign in using the original method first.",
-    "auth/network-request-failed": "Network error. Check your internet connection and try again.",
-    "auth/cancelled-popup-request": "Another Google sign-in attempt is already running. Finish or close that Google window, then try again."
+    "auth/popup-closed-by-user": "Google sign-in was closed.",
+    "auth/popup-blocked": "Your browser blocked the Google pop-up. Please allow pop-ups for WHITE_MSSG.",
+    "auth/unauthorized-domain": "This domain is not authorized in Firebase Authentication. Add this site/domain under Firebase → Authentication → Settings → Authorized domains.",
+    "auth/account-exists-with-different-credential": "An account with this email already exists using another sign-in method. Use the original method instead.",
+    "auth/network-request-failed": "Network error. Check your internet connection and try again."
   };
   alert(messages[error?.code] || error?.message || "Authentication failed.");
 }
 
-function isStandalonePWA() {
-  return window.matchMedia?.("(display-mode: standalone)").matches ||
-    window.navigator.standalone === true;
-}
-
-function isMobileBrowser() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || "");
-}
-
-async function startGoogleAuth(flowLabel = "Sign in") {
-  if (window.location.protocol === "file:") {
-    const err = new Error("WHITE_MSSG is being opened from file://. Firebase OAuth requires a web origin such as localhost or HTTPS.");
-    err.code = "auth/file-protocol";
-    showAuthError(err);
-    return;
-  }
-
+window.signInWithGoogle = async () => {
   try {
-    // Firebase recommends redirect on mobile because popups are often blocked there.
-    if (isMobileBrowser() || isStandalonePWA()) {
-      sessionStorage.setItem("white_mssg_google_flow", flowLabel);
-      await signInWithRedirect(auth, googleProvider);
-      return;
-    }
-
     const result = await signInWithPopup(auth, googleProvider);
     await completeGoogleLogin(result.user);
   } catch (error) {
-    console.error(`Google ${flowLabel} failed:`, error);
-
-    // Desktop browsers may block the popup. Falling back to redirect keeps auth usable.
-    if (error?.code === "auth/popup-blocked" ||
-        error?.code === "auth/operation-not-supported-in-this-environment" ||
-        error?.code === "auth/web-storage-unsupported") {
-      try {
-        sessionStorage.setItem("white_mssg_google_flow", flowLabel);
-        await signInWithRedirect(auth, googleProvider);
-        return;
-      } catch (redirectError) {
-        console.error("Google redirect fallback failed:", redirectError);
-        showAuthError(redirectError);
-        return;
-      }
-    }
-
+    console.error("Google Sign-In failed:", error);
     showAuthError(error);
   }
-}
+};
 
-window.signInWithGoogle = () => startGoogleAuth("Sign in");
-window.signUpWithGoogle = () => startGoogleAuth("Sign up");
+window.signUpWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    await completeGoogleLogin(result.user);
+  } catch (error) {
+    console.error("Google Sign-Up failed:", error);
+    showAuthError(error);
+  }
+};
 
 window.signUp = async () => {
   const username = document.getElementById("signupUsername").value.trim();
@@ -345,20 +305,6 @@ window.logoutUser = async () => {
   localStorage.removeItem("white_mssg_username");
   window.location.href = "index.html";
 };
-
-// Complete Google redirect sign-ins after the browser returns from Google.
-// This is also what makes Google auth work more reliably in installed PWAs/mobile browsers.
-getRedirectResult(auth)
-  .then(async (result) => {
-    if (!result?.user) return;
-    sessionStorage.removeItem("white_mssg_google_flow");
-    await completeGoogleLogin(result.user);
-  })
-  .catch((error) => {
-    console.error("Google redirect result failed:", error);
-    sessionStorage.removeItem("white_mssg_google_flow");
-    showAuthError(error);
-  });
 
 // Do not auto-redirect when Firebase restores an existing session.
 // Navigation into the app remains an explicit user action.

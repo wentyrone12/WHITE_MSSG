@@ -4,7 +4,7 @@ WHITE_MSSG now includes Progressive Web App (PWA) support.
 
 ## Install on Android / Chrome
 1. Host the project on HTTPS (for example GitHub Pages, Firebase Hosting, or another HTTPS host).
-2. Open the hosted HTTPS URL, not a `file://` path. Google Sign-In uses Firebase OAuth and requires a web origin.
+2. Open `index.html` through the hosted HTTPS URL.
 3. Use the WHITE_MSSG install prompt or the browser menu → Install app / Add to Home screen.
 
 ## Install on iPhone / iPad
@@ -39,6 +39,3 @@ In Firebase Console:
 4. Open `index.html` over HTTP/HTTPS rather than relying on `file://` for Firebase Authentication.
 
 The app uses the supplied `whitemssg` Firebase project configuration.
-
-### Google Sign-In troubleshooting
-The app uses popup sign-in on desktop and automatically uses redirect sign-in on mobile/installed-PWA mode. If the page was previously installed, refresh/update the app after deployment so the new v4 service-worker cache is activated.

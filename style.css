@@ -16,7 +16,8 @@
   --muted: #91a099;
 }
 
-html, body {
+html,
+body {
   min-height: 100%;
 }
 
@@ -45,7 +46,7 @@ body {
   height: 680px;
   position: fixed;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,255,136,.06), transparent 64%);
+  background: radial-gradient(circle, rgba(0, 255, 136, .06), transparent 64%);
   pointer-events: none;
   filter: blur(4px);
 }
@@ -60,7 +61,7 @@ body {
   border-radius: 28px;
   box-shadow:
     0 26px 80px rgba(0, 0, 0, .62),
-    0 0 0 1px rgba(255,255,255,.025),
+    0 0 0 1px rgba(255, 255, 255, .025),
     0 0 45px rgba(0, 255, 136, .08);
   backdrop-filter: blur(24px);
 }
@@ -79,7 +80,7 @@ body {
   object-fit: contain;
   background: #fff;
   padding: 3px;
-  box-shadow: 0 0 24px rgba(0,255,136,.18);
+  box-shadow: 0 0 24px rgba(0, 255, 136, .18);
 }
 
 .brand-name {
@@ -131,7 +132,7 @@ body {
   margin-top: 13px;
 }
 
-.field > span {
+.field>span {
   display: block;
   margin: 0 0 7px 2px;
   color: #b8c4bd;
@@ -143,7 +144,7 @@ body {
   width: 100%;
   padding: 13px 14px;
   margin: 0;
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255, 255, 255, .08);
   outline: none;
   border-radius: 13px;
   background: rgba(0, 0, 0, .42);
@@ -153,8 +154,8 @@ body {
 }
 
 .field input:focus {
-  border-color: rgba(0,255,136,.58);
-  box-shadow: 0 0 0 3px rgba(0,255,136,.08);
+  border-color: rgba(0, 255, 136, .58);
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, .08);
 }
 
 .field input::placeholder {
@@ -198,7 +199,7 @@ button {
   border: 1px solid transparent;
   background: linear-gradient(135deg, var(--green), var(--green-2));
   color: #00120a;
-  box-shadow: 0 9px 25px rgba(0,255,136,.16);
+  box-shadow: 0 9px 25px rgba(0, 255, 136, .16);
 }
 
 .auth-primary:hover {
@@ -211,27 +212,14 @@ button {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  border: 1px solid rgba(255,255,255,.11);
-  background: rgba(255,255,255,.055);
-  color: #f7faf8;
+  border: 1px solid rgba(44, 138, 17, 0.177);
+  background: rgba(245, 245, 245, 0.934);
 }
 
 .google-btn:hover {
-  background: rgba(255,255,255,.09);
-  border-color: rgba(255,255,255,.2);
+  background: rgba(255, 255, 255, .2);
+  border-color: rgba(255, 255, 255, .2);
   transform: translateY(-1px);
-}
-
-.google-icon {
-  width: 24px;
-  height: 24px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #fff;
-  color: #4285f4;
-  font-weight: 900;
-  font-family: Arial, sans-serif;
 }
 
 .or-divider {
@@ -247,7 +235,7 @@ button {
 .or-divider::after {
   content: "";
   height: 1px;
-  background: rgba(255,255,255,.08);
+  background: rgba(255, 255, 255, .08);
   flex: 1;
 }
 
@@ -291,9 +279,53 @@ button {
   display: none !important;
 }
 
+.google-logo {
+  font-family: "Product Sans", "Space Grotesk", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.google-logo span:nth-child(1) {
+  color: #4285F4;
+}
+
+/* G - Blue */
+.google-logo span:nth-child(2) {
+  color: #EA4335;
+}
+
+/* o - Red */
+.google-logo span:nth-child(3) {
+  color: #FBBC05;
+}
+
+/* o - Yellow */
+.google-logo span:nth-child(4) {
+  color: #4285F4;
+}
+
+/* g - Blue */
+.google-logo span:nth-child(5) {
+  color: #34A853;
+}
+
+/* l - Green */
+.google-logo span:nth-child(6) {
+  color: #EA4335;
+}
+
+/* e - Red */
 @keyframes formIn {
-  from { opacity: 0; transform: translateY(7px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 480px) {

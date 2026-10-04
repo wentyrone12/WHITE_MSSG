@@ -20,6 +20,18 @@ let currentChat = "";
 let inboxUnlocked = false;
 
 
+function openChats() {
+    // Return the inbox to the Chats tab from Requests or any other sidebar view.
+    // Also close any request detail overlay so the normal chat flow is restored.
+    showCategory("chat");
+
+    const requestOverlay = document.getElementById("requestOverlay");
+    if (requestOverlay) requestOverlay.classList.add("hidden");
+
+    currentRequest = null;
+}
+
+
 function showCategory(type) {
 
     if (!inboxUnlocked) {
@@ -271,7 +283,7 @@ async function startChat() {
         if (!foundUid || !foundData) return alert("User not found.");
 
         if (foundData.searchable === false) {
-            return alert("This user has disabled searchable profile.");
+            return alert("User not found.");
         }
 
         currentChat = [username, target].sort().join("_");
@@ -441,7 +453,7 @@ function loadChatList() {
             div.className = "request-item";
 
             div.innerHTML = `
-                📩 <strong>${data.fromUsername}</strong>
+                📩<strong>${data.fromUsername}</strong>
             `;
 
             div.onclick = () => {
