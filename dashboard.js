@@ -51,57 +51,74 @@ function showCategory(type) {
 
 const uid = localStorage.getItem("uid");
 
-if (!uid) {
-    alert("Not logged in!");
-    window.location.href = "index.html";
+let currentUserData = {};
+let presenceReady = false;
+
+function getCurrentUserRef() {
+    return db.ref("users/" + uid);
 }
 
-db.ref("users/" + uid).once("value", snap => {
-    const data = snap.val();
+function setOnlineStatus(status) {
+    if (!uid) return Promise.resolve();
 
-    if (!data) {
-        alert("User not found!");
-        return;
+    const visible = status === true && currentUserData.showOnlineStatus !== false;
+
+    return getCurrentUserRef().update({
+        online: visible,
+        lastActiveAt: Date.now()
+    }).catch(error => {
+        console.warn("Could not update active status:", error);
+    });
+}
+
+async function initializePresence() {
+    if (!uid || presenceReady) return;
+    presenceReady = true;
+
+    const onlineRef = getCurrentUserRef().child("online");
+    try {
+        await onlineRef.onDisconnect().set(false);
+    } catch (error) {
+        console.warn("onDisconnect setup failed:", error);
     }
 
-    username = data.username;
+    await setOnlineStatus(true);
+}
 
-    document.getElementById("chat").classList.remove("hidden");
-    document.getElementById("userDisplay").innerText = username;
+if (!uid) {
+    window.location.replace("index.html");
+} else {
+    getCurrentUserRef().once("value").then(async snap => {
+        const data = snap.val() || {};
 
-    setOnlineStatus(true);
-    loadChatList();
-    showCategory("chat");
-    loadPublicMessages();
-});
+        if (!snap.exists()) {
+            alert("User profile was not found. Please sign in again.");
+            localStorage.removeItem("uid");
+            window.location.replace("index.html");
+            return;
+        }
+
+        currentUserData = data;
+        username = data.username || localStorage.getItem("white_mssg_username") || "WHITE_USER";
+
+        document.getElementById("chat").classList.remove("hidden");
+        document.getElementById("userDisplay").innerText = username;
+
+        loadSettingsDefaults(data);
+        initializePinInputs();
+        await initializePresence();
+        loadChatList();
+        showCategory("chat");
+        loadPublicMessages();
+    });
+}
 
 
 function login() {
-    username = document.getElementById("username").value.trim();
-    if (!username) return alert("Enter username!");
-
-    document.getElementById("login").style.display = "none";
-    document.getElementById("chat").classList.remove("hidden");
-
-    document.getElementById("userDisplay").innerText = username;
-
-    setOnlineStatus(true);
-
+    // Kept only for compatibility with older markup.
     updateSecurityUI(false);
 }
 
-function openChats() {
-
-    showCategory("chat");
-
-}
-
-
-function setOnlineStatus(status) {
-    db.ref("users/" + username).set({
-        online: status
-    });
-}
 
 // SIDEBAR TOGGLE
 function toggleSidebar() {
@@ -119,72 +136,82 @@ function toggleSidebar() {
 }
 
 function openPinOverlay() {
+    clearPinGroup("lock");
 
-    const input = document.getElementById("pinInput");
-
-    input.value = "";
-
-    document.getElementById("sidebarLock").style.display = "flex";
+    const lock = document.getElementById("sidebarLock");
+    if (lock) lock.style.display = "flex";
 
     setTimeout(() => {
-
-        input.focus();
-
+        document.getElementById("pinInput1")?.focus();
     }, 100);
-
 }
 
 function closePinOverlay() {
-
-    document.getElementById("sidebarLock").style.display = "none";
-
+    const lock = document.getElementById("sidebarLock");
+    if (lock) lock.style.display = "none";
 }
 
 async function unlockInbox() {
-    const pin = document.getElementById("pinInput").value.trim();
+    const pin = getPinValue("lock");
+    if (!/^\d{6}$/.test(pin)) {
+        return alert("Enter all 6 PIN digits.");
+    }
+
     const securityRef = db.ref("users/" + uid + "/pinSecurity");
     const now = Date.now();
+
     try {
         const securitySnap = await securityRef.once("value");
         let security = securitySnap.val() || { attempts: 0, lockUntil: 0 };
+
         if (security.lockUntil && now < security.lockUntil) {
             const remaining = Math.ceil((security.lockUntil - now) / 3600000);
-            alert(`PIN access is held. Try again in about ${remaining} hour(s).`);
-            return;
+            clearPinGroup("lock");
+            return alert(`PIN access is held. Try again in about ${remaining} hour(s).`);
         }
+
         if (security.lockUntil && now >= security.lockUntil) {
             security = { attempts: 0, lockUntil: 0 };
             await securityRef.set(security);
         }
+
         const snap = await db.ref("users/" + uid).once("value");
         const data = snap.val() || {};
+
         if (!data.pin) {
-            document.getElementById("pinInput").value = "";
+            clearPinGroup("lock");
             document.getElementById("pinRecommendation").classList.remove("hidden");
             return;
         }
+
         if (pin !== data.pin) {
             const result = await securityRef.transaction(current => {
                 current = current || { attempts: 0, lockUntil: 0 };
-                if (current.lockUntil && Date.now() < current.lockUntil) return;
+                if (current.lockUntil && Date.now() < current.lockUntil) return current;
+
                 const attempts = (current.attempts || 0) + 1;
                 return attempts >= 4
                     ? { attempts: 4, lockUntil: Date.now() + 24 * 60 * 60 * 1000 }
                     : { attempts, lockUntil: 0 };
             });
+
             const updated = result.snapshot.val() || {};
-            document.getElementById("pinInput").value = "";
+            clearPinGroup("lock");
+
             if (updated.lockUntil && Date.now() < updated.lockUntil) {
                 alert("4 incorrect PIN attempts. PIN access is held for 24 hours.");
             } else {
                 alert(`Wrong PIN. ${Math.max(0, 4 - (updated.attempts || 0))} attempt(s) remaining.`);
-                document.getElementById("pinInput").focus();
+                document.getElementById("pinInput1")?.focus();
             }
             return;
         }
+
         await securityRef.set({ attempts: 0, lockUntil: 0 });
         inboxUnlocked = true;
+        currentUserData = { ...currentUserData, ...data };
         updateSecurityUI(true);
+        clearPinGroup("lock");
         document.getElementById("sidebarLock").style.display = "none";
         document.getElementById("sidebarContent").classList.remove("hidden");
         showCategory("chat");
@@ -216,16 +243,47 @@ function togglePublicChat() {
 
 
 // START CHAT
-function startChat() {
+async function startChat() {
+    if (!inboxUnlocked) return alert("Unlock your inbox PIN first.");
+
     const target = document.getElementById("targetUser").value.trim();
-    if (!target) return;
+    if (!target) return alert("Enter a username to search.");
 
-    currentChat = [username, target].sort().join("_");
+    if (target === username) {
+        return openMyProfile();
+    }
 
-    document.getElementById("chatWith").innerText = "Chat with: " + target;
+    try {
+        const snap = await db.ref("users")
+            .orderByChild("username")
+            .equalTo(target)
+            .once("value");
 
-    loadMessages();
-    listenStatus(target);
+        if (!snap.exists()) return alert("User not found.");
+
+        let foundUid = null;
+        let foundData = null;
+        snap.forEach(child => {
+            foundUid = child.key;
+            foundData = child.val() || {};
+        });
+
+        if (!foundUid || !foundData) return alert("User not found.");
+
+        if (foundData.searchable === false) {
+            return alert("This user has disabled searchable profile.");
+        }
+
+        currentChat = [username, target].sort().join("_");
+        document.getElementById("targetUser").value = target;
+        document.getElementById("chatWith").innerText = "Chat with: " + target;
+
+        loadMessages();
+        listenStatus(target);
+    } catch (error) {
+        console.error("User search failed:", error);
+        alert("Search failed. Please check your connection and try again.");
+    }
 }
 
 // SEND MESSAGE
@@ -404,17 +462,47 @@ function loadChatList() {
 
 // STATUS
 function listenStatus(target) {
-    db.ref("users/" + target).on("value", snap => {
-        const data = snap.val();
-        document.getElementById("status").innerText =
-            data && data.online ? "🟢 Online" : "⚪ Offline";
+    db.ref("users").orderByChild("username").equalTo(target).once("value", snapshot => {
+        let targetUid = null;
+
+        snapshot.forEach(child => {
+            targetUid = child.key;
+        });
+
+        const statusElement = document.getElementById("status");
+        if (!targetUid) {
+            statusElement.innerText = "⚪ Offline";
+            return;
+        }
+
+        const targetRef = db.ref("users/" + targetUid);
+
+        if (window._activeStatusRef && window._activeStatusHandler) {
+            window._activeStatusRef.off("value", window._activeStatusHandler);
+        }
+
+        window._activeStatusRef = targetRef;
+        window._activeStatusHandler = snap => {
+            const data = snap.val() || {};
+            if (data.showOnlineStatus === false) {
+                statusElement.innerText = "⚪ Offline";
+                return;
+            }
+            statusElement.innerText = data.online ? "🟢 Online" : "⚪ Offline";
+        };
+
+        targetRef.on("value", window._activeStatusHandler);
     });
 }
 
-// AUTO OFFLINE
 window.addEventListener("beforeunload", () => {
-    if (username) setOnlineStatus(false);
+    if (uid && currentUserData.showOnlineStatus !== false) {
+        try {
+            db.ref("users/" + uid + "/online").set(false);
+        } catch (_) {}
+    }
 });
+
 
 function loadPublicMessages() {
 
@@ -658,65 +746,49 @@ function calculateAge(birthDate) {
     return age;
 }
 
-function submitPinChange() {
+async function submitPinChange() {
+    const oldPin = getPinValue("old");
+    const newPin = getPinValue("new");
+    const confirm = getPinValue("confirm");
 
-    const oldPin = document
-        .getElementById("oldPinInput")
-        .value.trim();
+    if (!/^\d{6}$/.test(newPin)) {
+        return alert("New PIN must contain exactly 6 digits.");
+    }
 
-    const newPin = document
-        .getElementById("newPinInput")
-        .value.trim();
+    if (newPin !== confirm) {
+        return alert("New PIN does not match.");
+    }
 
-    const confirm = document
-        .getElementById("confirmPinInput")
-        .value.trim();
+    try {
+        const snap = await getCurrentUserRef().once("value");
+        const data = snap.val() || {};
 
-    db.ref("users/" + uid).once("value", snap => {
-
-        const data = snap.val();
-
-        if (data.pin) {
-
-            if (oldPin !== data.pin) {
-
-                alert("Wrong current PIN.");
-                return;
-
-            }
-
+        if (data.pin && oldPin !== data.pin) {
+            return alert("Wrong current PIN.");
         }
 
-        if (newPin.length !== 6) {
-
-            alert("PIN must be 6 digits.");
-            return;
-
-        }
-
-        if (newPin !== confirm) {
-
-            alert("PIN does not match.");
-            return;
-
-        }
-
-        db.ref("users/" + uid).update({
-
-            pin: newPin
-
+        await getCurrentUserRef().update({
+            pin: newPin,
+            pinUpdatedAt: Date.now(),
+            pinSecurity: { attempts: 0, lockUntil: 0 }
         });
 
-        document
-            .getElementById("pinBtn")
-            .innerText = "Change PIN";
+        currentUserData = { ...currentUserData, pin: newPin };
+        const pinBtn = document.getElementById("pinBtn");
+        if (pinBtn) pinBtn.innerText = "Change PIN";
 
-        alert("PIN saved.");
-
+        clearPinGroup("old");
+        clearPinGroup("new");
+        clearPinGroup("confirm");
         closeChangePin();
 
-    });
-
+        alert(inboxUnlocked
+            ? "6-digit PIN updated successfully."
+            : "6-digit PIN saved. You can now unlock your inbox.");
+    } catch (error) {
+        console.error("PIN update failed:", error);
+        alert("Could not save the PIN. Please try again.");
+    }
 }
 
 function openProfile(targetUser) {
@@ -761,6 +833,19 @@ function openProfile(targetUser) {
 
             document.getElementById("profileBio").innerText =
                 data.bio || "No bio yet";
+
+            const profileAvatar = document.querySelector(".profile-avatar");
+            if (profileAvatar) {
+                if (data.photoURL) {
+                    profileAvatar.style.backgroundImage = `url("${data.photoURL}")`;
+                    profileAvatar.textContent = "";
+                    profileAvatar.classList.add("has-photo");
+                } else {
+                    profileAvatar.style.backgroundImage = "";
+                    profileAvatar.textContent = "👤";
+                    profileAvatar.classList.remove("has-photo");
+                }
+            }
 
             document.getElementById("profileAgeInput").value =
                 data.age || "";
@@ -1253,69 +1338,119 @@ function declineRequest() {
 }
 
 
+function loadSettingsDefaults(data = {}) {
+    const email = data.email || "";
+    const birthday = data.age || "";
+    const searchable = data.searchable !== false;
+    const showOnline = data.showOnlineStatus !== false;
+
+    const emailInput = document.getElementById("emailSetting");
+    const usernameInput = document.getElementById("usernameSetting");
+    const birthdayInput = document.getElementById("birthdaySetting");
+    const ageInput = document.getElementById("ageSetting");
+    const bioInput = document.getElementById("bioSetting");
+    const onlineToggle = document.getElementById("onlineToggle");
+    const searchableToggle = document.getElementById("searchableToggle");
+
+    if (emailInput) emailInput.value = email;
+    if (usernameInput) usernameInput.value = data.username || username;
+    if (birthdayInput) birthdayInput.value = birthday;
+    if (ageInput) ageInput.value = calculateAge(birthday);
+    if (bioInput) bioInput.value = data.bio || "";
+    if (onlineToggle) onlineToggle.checked = showOnline;
+    if (searchableToggle) searchableToggle.checked = searchable;
+
+    const settingsUsername = document.getElementById("settingsUsername");
+    const settingsEmail = document.getElementById("settingsEmailPreview");
+    const settingsAvatar = document.getElementById("settingsAvatar");
+    const pinBtn = document.getElementById("pinBtn");
+    const status = document.getElementById("settingsAccountStatus");
+
+    if (settingsUsername) settingsUsername.innerText = data.username || username;
+    if (settingsEmail) settingsEmail.innerText = email || "No email on record";
+    if (pinBtn) pinBtn.innerText = data.pin ? "Change PIN" : "Create PIN";
+
+    if (status) {
+        status.innerHTML = showOnline
+            ? '<i class="status-indicator"></i> Active status is enabled'
+            : '<i class="status-indicator offline"></i> Active status is hidden';
+    }
+
+    if (settingsAvatar) {
+        if (data.photoURL) {
+            settingsAvatar.style.backgroundImage = `url("${data.photoURL}")`;
+            settingsAvatar.textContent = "";
+            settingsAvatar.classList.add("has-photo");
+        } else {
+            settingsAvatar.style.backgroundImage = "";
+            settingsAvatar.textContent = "👤";
+            settingsAvatar.classList.remove("has-photo");
+        }
+    }
+}
+
 function openSettings() {
-
     const overlay = document.getElementById("settingsOverlay");
-
     overlay.classList.remove("hidden");
     overlay.classList.add("active");
 
-    db.ref("users/" + uid).once("value").then((snap) => {
-
-        const data = snap.val() || {};
-
-        // EMAIL
-        document.getElementById("emailSetting").value =
-            data.email || "";
-
-        // BIRTHDAY
-        document.getElementById("birthdaySetting").value =
-            data.age || "";
-
-        // AGE
-        document.getElementById("ageSetting").value =
-            calculateAge(data.age);
-
-        // BIO
-        document.getElementById("bioSetting").value =
-            data.bio || "";
-
-        // PIN BUTTON
-        document.getElementById("pinBtn").innerText =
-            data.pin ? "Change PIN" : "Create PIN";
-
+    getCurrentUserRef().once("value").then(snap => {
+        currentUserData = snap.val() || {};
+        loadSettingsDefaults(currentUserData);
+        updatePrivacyPreviews();
     });
-
 }
 
 function closeSettings() {
-
-    document.getElementById("settingsOverlay")
-        .classList.add("hidden");
-
+    const overlay = document.getElementById("settingsOverlay");
+    overlay.classList.remove("active");
+    setTimeout(() => overlay.classList.add("hidden"), 180);
 }
 
-document.getElementById("birthdaySetting").addEventListener("change", function () {
+function updatePrivacyPreviews() {
+    const toggle = document.getElementById("onlineToggle");
+    const status = document.getElementById("settingsAccountStatus");
+    if (!toggle || !status) return;
 
-    document.getElementById("ageSetting").value =
-        calculateAge(this.value);
-
-});
+    status.innerHTML = toggle.checked
+        ? '<i class="status-indicator"></i> Active status is enabled'
+        : '<i class="status-indicator offline"></i> Active status is hidden';
+}
 
 function saveSettings() {
+    const age = document.getElementById("birthdaySetting").value;
+    const bio = document.getElementById("bioSetting").value.trim();
+    const showOnlineStatus = document.getElementById("onlineToggle").checked;
+    const searchable = document.getElementById("searchableToggle").checked;
 
-    db.ref("users/" + uid).update({
+    getCurrentUserRef().update({
+        age,
+        bio,
+        showOnlineStatus,
+        searchable,
+        online: showOnlineStatus,
+        lastActiveAt: Date.now()
+    }).then(() => {
+        currentUserData = {
+            ...currentUserData,
+            age,
+            bio,
+            showOnlineStatus,
+            searchable,
+            online: showOnlineStatus
+        };
 
-        age: document.getElementById("birthdaySetting").value,
+        const saveStatus = document.getElementById("settingsSaveStatus");
+        if (saveStatus) saveStatus.innerText = "✓ Settings saved successfully.";
 
-        bio: document.getElementById("bioSetting").value
-
+        updatePrivacyPreviews();
+        return setOnlineStatus(true);
+    }).then(() => {
+        setTimeout(() => closeSettings(), 350);
+    }).catch(error => {
+        console.error("Settings save failed:", error);
+        alert("Could not save settings. Please try again.");
     });
-
-    alert("Settings saved.");
-
-    closeSettings();
-
 }
 
 async function submitEmailChange() {
@@ -1372,50 +1507,33 @@ async function submitEmailChange() {
 
 }
 
-function submitPasswordChange() {
+async function submitPasswordChange() {
+    const current = document.getElementById("currentPasswordChange").value.trim();
+    const pass = document.getElementById("newPasswordChange").value.trim();
+    const confirm = document.getElementById("confirmPasswordChange").value.trim();
 
-    const current = document
-        .getElementById("currentPasswordChange")
-        .value.trim();
+    if (!current || !pass || !confirm) return alert("Please complete all password fields.");
+    if (pass.length < 6) return alert("New password must be at least 6 characters.");
+    if (pass !== confirm) return alert("Passwords do not match.");
 
-    const pass = document
-        .getElementById("newPasswordChange")
-        .value.trim();
+    try {
+        await window.changePassword(current, pass);
 
-    const confirm = document
-        .getElementById("confirmPasswordChange")
-        .value.trim();
-
-    db.ref("users/" + uid).once("value", snap => {
-
-        const data = snap.val();
-
-        if (current !== data.password) {
-
-            alert("Current password is incorrect.");
-            return;
-
-        }
-
-        if (pass !== confirm) {
-
-            alert("Passwords do not match.");
-            return;
-
-        }
-
-        db.ref("users/" + uid).update({
-
-            password: pass
-
-        });
-
-        alert("Password updated.");
+        document.getElementById("currentPasswordChange").value = "";
+        document.getElementById("newPasswordChange").value = "";
+        document.getElementById("confirmPasswordChange").value = "";
 
         closeChangePassword();
+        alert("Password updated successfully.");
+    } catch (error) {
+        console.error("Password update failed:", error);
 
-    });
-
+        if (error?.code === "auth/wrong-password" || error?.code === "auth/invalid-credential") {
+            alert("Current password is incorrect.");
+        } else {
+            alert(error?.message || "Could not update password.");
+        }
+    }
 }
 
 function toggleMessageMenu(id) {
@@ -1427,79 +1545,125 @@ function toggleMessageMenu(id) {
 }
 
 function openChangePin() {
+    const overlay = document.getElementById("changePinOverlay");
+    overlay.classList.remove("hidden");
+    overlay.classList.add("active");
 
-    document
-        .getElementById("changePinOverlay")
-        .classList.remove("hidden");
+    const hasPin = !!currentUserData.pin;
+    const oldRow = document.getElementById("oldPinRow");
+    if (oldRow) oldRow.classList.toggle("hidden", !hasPin);
 
+    clearPinGroup("old");
+    clearPinGroup("new");
+    clearPinGroup("confirm");
+
+    setTimeout(() => {
+        const target = hasPin ? document.getElementById("oldPin1") : document.getElementById("newPin1");
+        if (target) target.focus();
+    }, 80);
 }
 
 function closeChangePin() {
+    const overlay = document.getElementById("changePinOverlay");
+    overlay.classList.remove("active");
+    setTimeout(() => overlay.classList.add("hidden"), 180);
 
-    document
-        .getElementById("changePinOverlay")
-        .classList.add("hidden");
-
+    clearPinGroup("old");
+    clearPinGroup("new");
+    clearPinGroup("confirm");
 }
 
-function openChangePassword() {
+function getPinElements(prefix) {
+    const ids = prefix === "lock"
+        ? ["pinInput1","pinInput2","pinInput3","pinInput4","pinInput5","pinInput6"]
+        : prefix === "old"
+            ? ["oldPin1","oldPin2","oldPin3","oldPin4","oldPin5","oldPin6"]
+            : prefix === "new"
+                ? ["newPin1","newPin2","newPin3","newPin4","newPin5","newPin6"]
+                : ["confirmPin1","confirmPin2","confirmPin3","confirmPin4","confirmPin5","confirmPin6"];
 
-    document
-        .getElementById("changePasswordOverlay")
-        .classList.remove("hidden");
-
+    return ids.map(id => document.getElementById(id)).filter(Boolean);
 }
 
-function closeChangePassword() {
-
-    document
-        .getElementById("changePasswordOverlay")
-        .classList.add("hidden");
-
+function getPinValue(prefix) {
+    return getPinElements(prefix).map(input => input.value).join("");
 }
 
-function editMessage(id) {
+function clearPinGroup(prefix) {
+    getPinElements(prefix).forEach(input => input.value = "");
+}
 
-    const newText = prompt("Edit message");
-
-    if (!newText) return;
-
-    db.ref("chats/" + currentChat + "/" + id).update({
-
-        text: newText,
-
-        edited: true
-
+function fillPinGroup(prefix, text) {
+    const digits = String(text || "").replace(/\D/g, "").slice(0, 6);
+    const elements = getPinElements(prefix);
+    elements.forEach((input, index) => {
+        input.value = digits[index] || "";
     });
-
 }
 
-function unsendMessage(id) {
+function initializePinInputs() {
+    ["lock", "old", "new", "confirm"].forEach(prefix => {
+        const elements = getPinElements(prefix);
+        if (!elements.length || elements[0].dataset.pinReady) return;
 
-    if (!confirm("Unsend message?")) return;
+        elements.forEach((input, index) => {
+            input.dataset.pinReady = "1";
 
-    db.ref("chats/" + currentChat + "/" + id).update({
+            input.addEventListener("input", event => {
+                const value = event.target.value.replace(/\D/g, "");
 
-        unsent: true,
+                if (value.length > 1) {
+                    fillPinGroup(prefix, value);
+                } else {
+                    event.target.value = value.slice(0, 1);
+                    if (value && index < elements.length - 1) {
+                        elements[index + 1].focus();
+                    }
+                }
 
-        text: ""
+                if (prefix === "lock" && getPinValue("lock").length === 6) {
+                    unlockInbox();
+                }
+            });
 
+            input.addEventListener("keydown", event => {
+                if (event.key === "Backspace" && !input.value && index > 0) {
+                    event.preventDefault();
+                    elements[index - 1].value = "";
+                    elements[index - 1].focus();
+                }
+
+                if (event.key === "ArrowLeft" && index > 0) {
+                    event.preventDefault();
+                    elements[index - 1].focus();
+                }
+
+                if (event.key === "ArrowRight" && index < elements.length - 1) {
+                    event.preventDefault();
+                    elements[index + 1].focus();
+                }
+
+                if (event.key === "Enter" && prefix === "lock") {
+                    event.preventDefault();
+                    unlockInbox();
+                }
+            });
+
+            input.addEventListener("paste", event => {
+                event.preventDefault();
+                const pasted = (event.clipboardData || window.clipboardData).getData("text");
+                fillPinGroup(prefix, pasted);
+
+                const values = getPinElements(prefix);
+                const next = values.find(el => !el.value);
+                (next || values[values.length - 1])?.focus();
+
+                if (prefix === "lock" && getPinValue("lock").length === 6) {
+                    unlockInbox();
+                }
+            });
+        });
     });
-
-}
-
-function deleteMessage(id) {
-
-    if (!confirm("Delete this message?")) return;
-
-    db.ref("chats/" + currentChat + "/" + id).update({
-
-        deleted: true,
-
-        text: ""
-
-    });
-
 }
 
 function openChangeEmail() {
@@ -1552,36 +1716,34 @@ function closePinRecommendation() {
 }
 
 function goCreatePin() {
-
     closePinRecommendation();
-
     openSettings();
-
+    setTimeout(() => openChangePin(), 220);
 }
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    initializePinInputs();
 
-    const pin = document.getElementById("pinInput");
+    const birthday = document.getElementById("birthdaySetting");
+    if (birthday) {
+        birthday.addEventListener("change", function () {
+            document.getElementById("ageSetting").value = calculateAge(this.value);
+        });
+    }
 
-    pin.addEventListener("input", function () {
+    const onlineToggle = document.getElementById("onlineToggle");
+    if (onlineToggle) onlineToggle.addEventListener("change", updatePrivacyPreviews);
 
-        this.value = this.value.replace(/\D/g, "").substring(0, 6);
-
-        if (this.value.length === 6) {
-            unlockInbox();
+    const searchableToggle = document.getElementById("searchableToggle");
+    if (searchableToggle) searchableToggle.addEventListener("change", () => {
+        const note = document.getElementById("settingsSaveStatus");
+        if (note) {
+            note.innerText = searchableToggle.checked
+                ? "Searchable profile is ON."
+                : "Your username will be hidden from user search when saved.";
         }
-
     });
-
-    pin.addEventListener("keydown", function (e) {
-
-        if (e.key === "Enter") {
-            unlockInbox();
-        }
-
-    });
-
 });
 
 const timeElement = document.getElementById("clockTime");

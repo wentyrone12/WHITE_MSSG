@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WHITE_MSSG Auth</title>
+  <title>WHITE_MSSG — Sign In</title>
 
   <link rel="stylesheet" href="style.css">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -17,63 +17,127 @@
 </head>
 
 <body>
+  <div class="auth-shell">
+    <div class="auth-glow"></div>
 
-  <div class="container">
-    <h1>WHITE_MSSG</h1>
-
-    <!-- LOGIN -->
-    <div id="loginForm" class="form active">
-      <input type="email" id="loginEmail" placeholder="Email">
-      <input type="password" id="loginPassword" placeholder="Password">
-
-      <label class="show-password">
-        <input type="checkbox" onclick="togglePassword('loginPassword')">
-        Show Password
-      </label>
-      <button onclick="login()">Login</button>
-
-      <div class="links">
-        <span onclick="showForm('forgotForm')">Forgot Password</span>
-        <span onclick="showForm('signupForm')">Sign Up</span>
+    <main class="container">
+      <div class="auth-brand">
+        <img src="logo.png" alt="WHITE_MSSG logo" class="auth-logo">
+        <div>
+          <span class="brand-name">WHITE<span>_MSSG</span></span>
+          <small>Private messaging • secure chat</small>
+        </div>
       </div>
-    </div>
 
-    <!-- SIGN UP -->
-    <div id="signupForm" class="form">
-      <input type="text" id="signupUsername" placeholder="Username">
-      <input type="email" id="signupEmail" placeholder="Email">
-      <input type="password" id="signupPassword" placeholder="Password">
-      <input type="password" id="signupConfirmPassword" placeholder="Confirm Password">
+      <!-- LOGIN -->
+      <section id="loginForm" class="form active" aria-labelledby="loginTitle">
+        <div class="form-heading">
+          <h1 id="loginTitle">Welcome back</h1>
+          <p>Sign in to continue to WHITE_MSSG.</p>
+        </div>
 
-      <label class="show-password">
-        <input type="checkbox" onclick="togglePassword('signupPassword','signupConfirmPassword')">
-        Show Password
-      </label>
-      <button onclick="signUp()">Create Account</button>
+        <label class="field">
+          <span>Email</span>
+          <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+        </label>
 
-      <div class="links">
-        <span onclick="showForm('loginForm')">Back to Login</span>
-      </div>
-    </div>
+        <label class="field">
+          <span>Password</span>
+          <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+        </label>
 
-    <!-- FORGOT -->
-    <div id="forgotForm" class="form">
-      <input type="email" id="forgotEmail" placeholder="Enter your email">
-      <button onclick="resetPassword()">Send Reset Link</button>
+        <label class="show-password">
+          <input type="checkbox" onclick="togglePassword('loginPassword')">
+          <span>Show Password</span>
+        </label>
 
-      <div class="links">
-        <span onclick="showForm('loginForm')">Back to Login</span>
-      </div>
-    </div>
+        <button class="auth-primary" type="button" onclick="login()">Sign In</button>
+
+        <div class="or-divider"><span>or</span></div>
+
+        <button class="google-btn" type="button" onclick="signInWithGoogle()">
+          <span class="google-icon">G</span>
+          Continue with Google
+        </button>
+
+        <div class="auth-links">
+          <button type="button" class="text-btn" onclick="showForm('forgotForm')">Forgot Password?</button>
+          <button type="button" class="text-btn" onclick="showForm('signupForm')">Create Account</button>
+        </div>
+      </section>
+
+      <!-- SIGN UP -->
+      <section id="signupForm" class="form" aria-labelledby="signupTitle">
+        <div class="form-heading">
+          <h1 id="signupTitle">Create account</h1>
+          <p>Start your private messaging account.</p>
+        </div>
+
+        <label class="field">
+          <span>Username</span>
+          <input type="text" id="signupUsername" placeholder="Choose a username" autocomplete="username">
+        </label>
+
+        <label class="field">
+          <span>Email</span>
+          <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email">
+        </label>
+
+        <label class="field">
+          <span>Password</span>
+          <input type="password" id="signupPassword" placeholder="At least 6 characters" autocomplete="new-password">
+        </label>
+
+        <label class="field">
+          <span>Confirm Password</span>
+          <input type="password" id="signupConfirmPassword" placeholder="Repeat your password" autocomplete="new-password">
+        </label>
+
+        <label class="show-password">
+          <input type="checkbox" onclick="togglePassword('signupPassword','signupConfirmPassword')">
+          <span>Show Password</span>
+        </label>
+
+        <button class="auth-primary" type="button" onclick="signUp()">Sign Up</button>
+
+        <div class="or-divider"><span>or</span></div>
+
+        <button class="google-btn" type="button" onclick="signUpWithGoogle()">
+          <span class="google-icon">G</span>
+          Sign Up with Google
+        </button>
+
+        <div class="auth-links auth-links-center">
+          <button type="button" class="text-btn" onclick="showForm('loginForm')">← Back to Sign In</button>
+        </div>
+      </section>
+
+      <!-- FORGOT -->
+      <section id="forgotForm" class="form" aria-labelledby="forgotTitle">
+        <div class="form-heading">
+          <h1 id="forgotTitle">Reset password</h1>
+          <p>We’ll send a password reset link to your email.</p>
+        </div>
+
+        <label class="field">
+          <span>Email</span>
+          <input type="email" id="forgotEmail" placeholder="you@example.com" autocomplete="email">
+        </label>
+
+        <button class="auth-primary" type="button" onclick="resetPassword()">Send Reset Link</button>
+
+        <div class="auth-links auth-links-center">
+          <button type="button" class="text-btn" onclick="showForm('loginForm')">← Back to Sign In</button>
+        </div>
+      </section>
+    </main>
   </div>
 
-  <div class="footer-tag" style="color: greenyellow;">Made by Wenxyz</div>
+  <div class="footer-tag">Made by Wenxyz • WHITE_MSSG</div>
 
   <script src="ui.js"></script>
   <script type="module" src="app.js"></script>
-
   <script src="pwa.js"></script>
-
 </body>
 
 </html>

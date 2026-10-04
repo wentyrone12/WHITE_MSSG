@@ -39,14 +39,19 @@
 
       <!-- LOCK SCREEN -->
       <div id="sidebarLock" class="sidebar-lock">
+        <div class="lock-icon">🔐</div>
         <h3>Inbox Locked</h3>
-        <p>Enter your 6-digit PIN to unlock</p>
-        <div class="pin-boxes">
-          <input id="pinInput" class="pin-single" type="password" maxlength="6" inputmode="numeric" autocomplete="off"
-            placeholder="••••••">
+        <p>Enter your 6-digit PIN to unlock your chats, requests, and user search.</p>
+        <div class="pin-boxes pin-boxes-lock" data-pin-group="lock">
+          <input id="pinInput1" class="pin-digit" type="password" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="PIN digit 1">
+          <input id="pinInput2" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="PIN digit 2">
+          <input id="pinInput3" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="PIN digit 3">
+          <input id="pinInput4" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="PIN digit 4">
+          <input id="pinInput5" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="PIN digit 5">
+          <input id="pinInput6" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="PIN digit 6">
         </div>
         <button class="btn-primary" onclick="unlockInbox()">Unlock Inbox</button>
-        <p class="lock-hint">Secure your chats with PIN protection</p>
+        <p class="lock-hint">6 digits • 4 wrong attempts = 24-hour hold</p>
       </div>
 
       <!-- CONTENT -->
@@ -63,7 +68,7 @@
 
       <div class="sidebar-footer">
         <button class="settings-btn" onclick="openSettings()">⚙ Settings</button>
-        <a href="index.html" class="logout-btn">Log Out</a>
+        <a href="index.html" class="logout-btn" onclick="logoutUser(); return false;">Log Out</a>
       </div>
     </aside>
 
@@ -152,7 +157,7 @@
       </div>
       <div id="messageBox" class="hidden message-box">
         <textarea id="requestMessage" placeholder="Type your message..."></textarea>
-        <button class="btn-primary" onclick="sendMessageRequest()">Send Request</button>
+        <button class="btn-primary btn-sendmssg" onclick="sendMessageRequest()">Send Request</button>
       </div>
       <input id="profileAgeInput" type="date" class="hidden">
       <textarea id="profileBioInput" class="hidden" placeholder="Bio" maxlength="80"></textarea>
@@ -195,22 +200,143 @@
   <!-- SETTINGS -->
   <div id="settingsOverlay" class="overlay hidden">
     <div class="overlay-card glass settings-card-large">
-      <button class="close-overlay" onclick="closeSettings()">✕</button>
-      <h2>⚙ Settings</h2>
-      <div class="setting-section">
-        <h3>Account</h3><label>Email</label><input id="emailSetting" readonly><label>Birthday</label><input
-          id="birthdaySetting" type="date"><label>Age</label><input id="ageSetting" readonly><label>Bio</label><textarea
-          id="bioSetting" maxlength="80"></textarea>
+      <button class="close-overlay" onclick="closeSettings()" aria-label="Close settings">✕</button>
+
+      <div class="settings-header">
+        <div>
+          <span class="settings-kicker">ACCOUNT CONTROL</span>
+          <h2>⚙ Settings</h2>
+          <p>Manage your profile, privacy, security, and app controls.</p>
+        </div>
       </div>
-      <div class="setting-section">
-        <h3>Security</h3><button class="btn-ghost" onclick="openChangeEmail()">Change Email</button><button
-          class="btn-ghost" onclick="openChangePassword()">Change Password</button><button class="btn-ghost" id="pinBtn"
-          onclick="openChangePin()">Create PIN</button>
+
+      <div class="settings-profile-card">
+        <div class="settings-profile-avatar" id="settingsAvatar">👤</div>
+        <div class="settings-profile-main">
+          <strong id="settingsUsername">WHITE_USER</strong>
+          <span id="settingsEmailPreview">Loading account...</span>
+          <span id="settingsAccountStatus"><i class="status-indicator"></i> Active account</span>
+        </div>
+        <button class="settings-profile-btn" type="button" onclick="closeSettings(); openMyProfile();">👤 Profile</button>
       </div>
-      <div class="setting-section">
-        <h3>Privacy</h3><label class="check-label"><input type="checkbox" id="onlineToggle"> Show Online Status</label>
+
+      <div class="settings-grid">
+        <section class="setting-section">
+          <div class="setting-title-row">
+            <div>
+              <h3>👤 Profile</h3>
+              <p>Keep your public profile information updated.</p>
+            </div>
+            <span class="settings-badge">PROFILE</span>
+          </div>
+
+          <div class="settings-field">
+            <label for="emailSetting">Login Email</label>
+            <input id="emailSetting" readonly>
+          </div>
+
+          <div class="settings-field">
+            <label for="usernameSetting">Username</label>
+            <input id="usernameSetting" readonly>
+          </div>
+
+          <div class="settings-two-col">
+            <div class="settings-field">
+              <label for="birthdaySetting">Birthday</label>
+              <input id="birthdaySetting" type="date">
+            </div>
+            <div class="settings-field">
+              <label for="ageSetting">Age</label>
+              <input id="ageSetting" readonly>
+            </div>
+          </div>
+
+          <div class="settings-field">
+            <label for="bioSetting">Bio <span class="field-help">max 80 characters</span></label>
+            <textarea id="bioSetting" maxlength="80" placeholder="Tell people a little about yourself..."></textarea>
+          </div>
+        </section>
+
+        <section class="setting-section">
+          <div class="setting-title-row">
+            <div>
+              <h3>🔐 Security</h3>
+              <p>Update your sign-in credentials and inbox PIN.</p>
+            </div>
+            <span class="settings-badge">SECURE</span>
+          </div>
+
+          <div class="settings-action-list">
+            <button class="settings-action" type="button" onclick="openChangeEmail()">
+              <span class="settings-action-icon">📧</span>
+              <span><strong>Change Email</strong><small>Verify a new login email</small></span>
+              <b>›</b>
+            </button>
+
+            <button class="settings-action" type="button" onclick="openChangePassword()">
+              <span class="settings-action-icon">🔒</span>
+              <span><strong>Change Password</strong><small>Use Firebase Authentication</small></span>
+              <b>›</b>
+            </button>
+
+            <button class="settings-action" type="button" onclick="openChangePin()">
+              <span class="settings-action-icon">🔢</span>
+              <span><strong id="pinBtn">Create PIN</strong><small>6-digit inbox protection</small></span>
+              <b>›</b>
+            </button>
+          </div>
+        </section>
+
+        <section class="setting-section">
+          <div class="setting-title-row">
+            <div>
+              <h3>🛡 Privacy & Presence</h3>
+              <p>Control what other users can see and find.</p>
+            </div>
+            <span class="settings-badge">PRIVACY</span>
+          </div>
+
+          <label class="privacy-row">
+            <span class="privacy-copy">
+              <span class="privacy-icon">🟢</span>
+              <span><strong>Show Active Status</strong><small>Allow others to see when you're online.</small></span>
+            </span>
+            <input type="checkbox" id="onlineToggle" class="switch-input">
+            <span class="switch-ui"></span>
+          </label>
+
+          <label class="privacy-row">
+            <span class="privacy-copy">
+              <span class="privacy-icon">🔎</span>
+              <span><strong>Searchable Profile</strong><small>Turn off to hide your username from user search.</small></span>
+            </span>
+            <input type="checkbox" id="searchableToggle" class="switch-input">
+            <span class="switch-ui"></span>
+          </label>
+        </section>
+
+        <section class="setting-section">
+          <div class="setting-title-row">
+            <div>
+              <h3>📱 App</h3>
+              <p>Install WHITE_MSSG for an app-like mobile experience.</p>
+            </div>
+            <span class="settings-badge">PWA</span>
+          </div>
+          <div class="settings-app-note">
+            <span>📲</span>
+            <div>
+              <strong>WHITE_MSSG on your phone</strong>
+              <small>Install from your browser when supported. Your current web data and account stay connected.</small>
+            </div>
+          </div>
+        </section>
       </div>
-      <button class="btn-primary" onclick="saveSettings()" style="margin-top:12px">Save Changes</button>
+
+      <div class="settings-footer-row">
+        <span id="settingsSaveStatus" class="settings-save-status">Changes are saved when you press Save Changes.</span>
+        <button class="btn-primary settings-save-btn" type="button" onclick="saveSettings()">Save Changes</button>
+      </div>
     </div>
   </div>
 
@@ -241,16 +367,54 @@
 
   <!-- CHANGE PIN -->
   <div id="changePinOverlay" class="overlay hidden">
-    <div class="overlay-card glass change-card">
+    <div class="overlay-card glass change-card pin-change-card">
       <button class="close-overlay" onclick="closeChangePin()">✕</button>
-      <h2>🔐 Create / Change PIN</h2>
-      <label>Current PIN</label><input maxlength="6" inputmode="numeric" id="oldPinInput" placeholder="Current PIN"
-        type="password">
-      <label>New PIN</label><input maxlength="6" inputmode="numeric" id="newPinInput" placeholder="New PIN"
-        type="password">
-      <label>Confirm PIN</label><input maxlength="6" inputmode="numeric" id="confirmPinInput" placeholder="Confirm PIN"
-        type="password">
-      <button class="btn-primary" onclick="submitPinChange()" style="margin-top:12px">Save PIN</button>
+      <div class="change-card-head">
+        <span class="change-card-icon">🔐</span>
+        <div>
+          <span class="settings-kicker">INBOX SECURITY</span>
+          <h2>Create / Change PIN</h2>
+          <p>Your PIN is exactly 6 digits and protects private areas of WHITE_MSSG.</p>
+        </div>
+      </div>
+
+      <div id="oldPinRow" class="pin-input-group pin-current-row">
+        <label>Current PIN</label>
+        <div class="pin-boxes" data-pin-group="old">
+          <input id="oldPin1" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="Current PIN digit 1">
+          <input id="oldPin2" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="Current PIN digit 2">
+          <input id="oldPin3" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="Current PIN digit 3">
+          <input id="oldPin4" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="Current PIN digit 4">
+          <input id="oldPin5" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="Current PIN digit 5">
+          <input id="oldPin6" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="Current PIN digit 6">
+        </div>
+      </div>
+
+      <div class="pin-input-group">
+        <label>New PIN</label>
+        <div class="pin-boxes" data-pin-group="new">
+          <input id="newPin1" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="New PIN digit 1">
+          <input id="newPin2" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="New PIN digit 2">
+          <input id="newPin3" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="New PIN digit 3">
+          <input id="newPin4" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="New PIN digit 4">
+          <input id="newPin5" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="New PIN digit 5">
+          <input id="newPin6" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="New PIN digit 6">
+        </div>
+      </div>
+
+      <div class="pin-input-group">
+        <label>Confirm New PIN</label>
+        <div class="pin-boxes" data-pin-group="confirm">
+          <input id="confirmPin1" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="Confirm PIN digit 1">
+          <input id="confirmPin2" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="Confirm PIN digit 2">
+          <input id="confirmPin3" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="Confirm PIN digit 3">
+          <input id="confirmPin4" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="Confirm PIN digit 4">
+          <input id="confirmPin5" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="Confirm PIN digit 5">
+          <input id="confirmPin6" class="pin-digit" type="password" inputmode="numeric" maxlength="1" aria-label="Confirm PIN digit 6">
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="submitPinChange()" style="margin-top:14px">Save 6-Digit PIN</button>
     </div>
   </div>
 
